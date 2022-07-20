@@ -107,9 +107,11 @@ PersonalAvgItemLvlText:SetPoint("BOTTOMLEFT",PaperDollFrame,"TOPLEFT",270,-265)
 PersonalAvgItemLvlText:Show()
 
 PaperDollFrame:HookScript("OnShow", function(self)
-	local MyGearScore, MyAverageScore = GearScore_GetScore(UnitName("player"), "player");
+	local MyGearScore, MyAverageScore = GearScore_GetScore("player");
 	local r, g, b = GearScore_GetQuality(MyGearScore)
 	if (TacoTipConfig.show_gs_character) then
+        PersonalGearScore:SetText(MyGearScore);
+        PersonalGearScore:SetTextColor(r, g, b, 1)
 		PersonalGearScore:Show()
 		PersonalGearScoreText:Show()
 	else
@@ -117,6 +119,8 @@ PaperDollFrame:HookScript("OnShow", function(self)
 		PersonalGearScoreText:Hide()
 	end
 	if (TacoTipConfig.show_avg_ilvl) then
+        PersonalAvgItemLvl:SetText(MyAverageScore);
+        PersonalAvgItemLvl:SetTextColor(r, g, b, 1)
 		PersonalAvgItemLvl:Show()
 		PersonalAvgItemLvlText:Show()
 	else
@@ -133,7 +137,7 @@ local function RefreshInspectFrame()
 		InspectAvgItemLvlText:Hide()
 	elseif (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl) then
 		local inspect_gs, inspect_avg = GearScore_GetScore(InspectFrame.unit);
-		local r, b, g = GearScore_GetQuality(inspect_gs)
+		local r, g, b = GearScore_GetQuality(inspect_gs)
 		if (TacoTipConfig.show_gs_character) then
 			InspectGearScore:SetText(inspect_gs);
 			InspectGearScore:SetTextColor(r, g, b, 1)
