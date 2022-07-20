@@ -176,7 +176,7 @@ function GUIDToUnitToken(guid)
                 end
             end
         else
-            for i=1,5 do
+            for i=1,4 do
                 if(UnitGUID("party"..i) == guid) then
                     return "party"..i
                 end
@@ -350,7 +350,7 @@ function IGetLastCacheTime(guid)
 end
 
 function ICanInspect(unit)
-    return unit and (not InCombatLockdown()) and UnitExists(unit) and UnitIsPlayer(unit) and UnitIsConnected(unit) and (not UnitIsDeadOrGhost(unit)) and (not UnitIsUnit(unit, "player")) and CheckInteractDistance(unit, 1) and (not InspectFrame or not InspectFrame:IsShown()) and CanInspect(unit)
+    return unit and (not InCombatLockdown()) and UnitExists(unit) and UnitIsPlayer(unit) and UnitIsConnected(unit) and (not UnitIsDeadOrGhost(unit)) and (not UnitIsUnit(unit, "player")) and CheckInteractDistance(unit, 1) and (not InspectFrame or not InspectFrame:IsShown()) and CanInspect(unit, false)
 end
 
 local oNotifyInspect = NotifyInspect
@@ -367,11 +367,11 @@ local function tryInspect(unit)
         if (user) then
             local t = time()-INSPECTOR_REFRESH_DELAY
             if (user.talents.time < t or user.inventory.time < t) then
-                NotifyInspect("target")
+                NotifyInspect(unit)
                 return true
             end
         else
-            NotifyInspect("target")
+            NotifyInspect(unit)
             return true
         end
     end
