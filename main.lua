@@ -197,7 +197,7 @@ end
 
 local f = CreateFrame("Frame", nil, UIParent)
 f:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
-f:RegisterEvent("PLAYER_ENTERING_WORLD")
+--f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:SetScript("OnEvent", onEvent)
 
 C_Timer.NewTicker(1, function()
