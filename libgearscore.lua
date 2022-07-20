@@ -180,7 +180,7 @@ function GearScore_GetScore(Target)
             return 0,0
         end
         local _, invTime = IGetLastCacheTime(guid)
-        if (invTime == 0) then
+        if (not UnitIsUnit(Target, "player") and invTime == 0) then
             return 0,0
         end
         local PlayerClass, PlayerEnglishClass = UnitClass(Target);
