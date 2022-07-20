@@ -125,6 +125,67 @@ PaperDollFrame:HookScript("OnShow", function(self)
 	end
 end)
 
+local function RefreshInspectFrame()
+	if (InCombatLockdown()) then
+		InspectGearScore:Hide()
+		InspectGearScoreText:Hide()
+		InspectAvgItemLvl:Hide()
+		InspectAvgItemLvlText:Hide()
+	elseif (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl) then
+		local inspect_gs, inspect_avg = GearScore_GetScore(InspectFrame.unit);
+		local r, b, g = GearScore_GetQuality(inspect_gs)
+		if (TacoTipConfig.show_gs_character) then
+			InspectGearScore:SetText(inspect_gs);
+			InspectGearScore:SetTextColor(r, g, b, 1)
+			InspectGearScore:Show()
+			InspectGearScoreText:Show()
+		else
+			InspectGearScore:Hide()
+			InspectGearScoreText:Hide()
+		end
+		if (TacoTipConfig.show_avg_ilvl) then
+			InspectAvgItemLvl:SetText(inspect_avg);
+			InspectAvgItemLvl:SetTextColor(r, g, b, 1)
+			InspectAvgItemLvl:Show()
+			InspectAvgItemLvlText:Show()
+		else
+			InspectAvgItemLvl:Hide()
+			InspectAvgItemLvlText:Hide()
+		end
+    else
+		InspectGearScore:Hide()
+		InspectGearScoreText:Hide()
+		InspectAvgItemLvl:Hide()
+		InspectAvgItemLvlText:Hide()
+	end
+end
+
+local inspect_init = false
+local function InitInspectFrame()
+	inspect_init = true
+	local text1 = InspectModelFrame:CreateFontString("InspectGearScore");
+	text1:SetFont("Fonts\\FRIZQT__.TTF", 10);
+	text1:SetText("0");
+	text1:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",72,-359);
+
+	local text2 = InspectModelFrame:CreateFontString("InspectGearScoreText");
+	text2:SetFont("Fonts\\FRIZQT__.TTF", 10);
+	text2:SetText("GearScore");
+	text2:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",72,-372);
+	
+	local text3 = InspectModelFrame:CreateFontString("InspectAvgItemLvl");
+	text3:SetFont("Fonts\\FRIZQT__.TTF", 10);
+	text3:SetText("0");
+	text3:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",270,-359);
+
+	local text4 = InspectModelFrame:CreateFontString("InspectAvgItemLvlText");
+	text4:SetFont("Fonts\\FRIZQT__.TTF", 10);
+	text4:SetText("iLvl");
+	text4:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",270,-372);
+
+	InspectPaperDollFrame:HookScript("OnShow", RefreshInspectFrame);
+end
+
 local function onEvent(self, event, ...)
     local MyGearScore, MyAverageScore = GearScore_GetScore("player");
     local r, g, b = GearScore_GetQuality(MyGearScore)
@@ -138,3 +199,16 @@ local f = CreateFrame("Frame", nil, UIParent)
 f:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:SetScript("OnEvent", onEvent)
+
+C_Timer.NewTicker(1, function()
+    if (not inspector or InCombatLockdown() or not UnitExists("player") or not UnitIsConnected("player") or UnitIsDeadOrGhost("player")) then
+        return
+    end
+    if (not inspect_init) then
+        if (InspectModelFrame and InspectPaperDollFrame) then
+            InitInspectFrame()
+        end
+    elseif (InspectFrame and InspectFrame:IsShown()) then
+	   RefreshInspectFrame()
+	end
+end)
