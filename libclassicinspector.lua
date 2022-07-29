@@ -436,12 +436,8 @@ end
 local function onEvent(self, event, ...)
     if (event == "UNIT_INVENTORY_CHANGED") then
         local unit = ...
-        if (unit and unit ~= "player") then
-            local ready = IsInspectInventoryReady(unit)
-            print(event, ..., ready)
-            if(ready and not UnitIsUnit(unit, "player")) then
-                cacheUserInventory(unit)
-            end
+        if (unit and (not UnitIsUnit(unit, "player")) and IsInspectInventoryReady(unit)) then
+            cacheUserInventory(unit)
         end
     else -- INSPECT_READY
         local guid = ...
