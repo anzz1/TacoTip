@@ -11,11 +11,12 @@ local function resetCfg()
         show_talents = true,
         show_gs_player = true,
         show_gs_character = true,
-        show_gs_items = true,
+        show_gs_items = false,
         show_avg_ilvl = true,
         hide_in_combat = false,
         show_item_level = true,
-        tip_style = 2
+        tip_style = 2,
+        show_target = false
     }
     --SetCVar("showItemLevel", "1")
 end
@@ -64,74 +65,74 @@ frame:SetScript("OnShow", function(frame)
         return check
     end
     
-	local function newDropDown(name, values, callback)
-		local dropDown = CreateFrame("Frame", "TacoTipOptDropDown" .. name, frame, "UIDropDownMenuTemplate")
-		UIDropDownMenu_Initialize(dropDown, function(frame, level, menuList)
-			local info = UIDropDownMenu_CreateInfo()
-			info.func = function(self)
-					UIDropDownMenu_SetSelectedValue(frame, self.value)
-					callback(self.value)
-			end
-			for i,selection in ipairs(values) do
-				local text, desc = unpack(selection)
-				info.text, info.checked, info.value = text, false, i
-				if(desc) then
-					info.tooltipTitle = text
-					info.tooltipText = desc
-					info.tooltipOnButton = 1
-				end
-				UIDropDownMenu_AddButton(info)
-			end
-		end)
-		dropDown.SetValue = function(self, value)
-			self.selectedValue = value
-			UIDropDownMenu_SetText(self, values[value][1])
-		end
-		return dropDown
-	end
-	
-	
-	options.exampleTooltip = CreateFrame("GameTooltip", "TacoTipOptExampleTooltip", frame, "GameTooltipTemplate" );
-	local function showExampleTooltip()
-		options.exampleTooltip:SetOwner(frame, "ANCHOR_NONE")
-		options.exampleTooltip:SetPoint("TOPLEFT", description, "TOPLEFT", 340, 0)
-		local classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)["ROGUE"]
-		local name_r = TacoTipConfig.color_class and classc.r or 1
-		local name_g = TacoTipConfig.color_class and classc.g or 1
-		local name_b = TacoTipConfig.color_class and classc.b or 1
-		local title = TacoTipConfig.show_titles and " the Kingslayer" or ""
-		options.exampleTooltip:AddLine(string.format("|cFF%02x%02x%02xKebabstorm%s|r", name_r*255, name_g*255, name_b*255, title))
-		if (TacoTipConfig.show_guild_name) then
-			if (TacoTipConfig.show_guild_rank) then
-				options.exampleTooltip:AddLine("|cFF40FB40Officer of <Drunken Wrath>|r")
-			else
-				options.exampleTooltip:AddLine("|cFF40FB40<Drunken Wrath>|r")
-			end
-		end
-		options.exampleTooltip:AddLine(string.format("Level 80 Undead |cFF%02x%02x%02xRogue|r (Player)", name_r*255, name_g*255, name_b*255), 1, 1, 1)
-		
-		local wide_style = (TacoTipConfig.tip_style == 3 or (TacoTipConfig.tip_style == 2 and IsModifierKeyDown()) and true) or false
-		if (TacoTipConfig.show_talents) then
-			if (wide_style) then
-				options.exampleTooltip:AddDoubleLine("Talents:", "Assassination [51/18/2]", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
-				options.exampleTooltip:AddDoubleLine(" ", "Subtlety [14/3/54]", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
-			else
-				options.exampleTooltip:AddLine("Talents:|cFFFFFFFF Assassination [51/18/2]")
-			end
-		end
-		if (TacoTipConfig.show_gs_player) then
-			local gs_r, gs_b, gs_g = GearScore_GetQuality(6054)
-			if (wide_style) then
-				options.exampleTooltip:AddDoubleLine("GearScore: 6054", "(iLvl: 264)", gs_r, gs_g, gs_b, gs_r, gs_g, gs_b)
-			else
-				options.exampleTooltip:AddLine("GearScore: 6054", gs_r, gs_g, gs_b)
-			end
-		end
-		options.exampleTooltip:Show();
-	end
-	options.exampleTooltip:SetScript("OnEvent", function() showExampleTooltip() end)
-	
-	
+    local function newDropDown(name, values, callback)
+        local dropDown = CreateFrame("Frame", "TacoTipOptDropDown" .. name, frame, "UIDropDownMenuTemplate")
+        UIDropDownMenu_Initialize(dropDown, function(frame, level, menuList)
+            local info = UIDropDownMenu_CreateInfo()
+            info.func = function(self)
+                    UIDropDownMenu_SetSelectedValue(frame, self.value)
+                    callback(self.value)
+            end
+            for i,selection in ipairs(values) do
+                local text, desc = unpack(selection)
+                info.text, info.checked, info.value = text, false, i
+                if(desc) then
+                    info.tooltipTitle = text
+                    info.tooltipText = desc
+                    info.tooltipOnButton = 1
+                end
+                UIDropDownMenu_AddButton(info)
+            end
+        end)
+        dropDown.SetValue = function(self, value)
+            self.selectedValue = value
+            UIDropDownMenu_SetText(self, values[value][1])
+        end
+        return dropDown
+    end
+    
+    
+    options.exampleTooltip = CreateFrame("GameTooltip", "TacoTipOptExampleTooltip", frame, "GameTooltipTemplate" );
+    local function showExampleTooltip()
+        options.exampleTooltip:SetOwner(frame, "ANCHOR_NONE")
+        options.exampleTooltip:SetPoint("TOPLEFT", description, "TOPLEFT", 340, 0)
+        local classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)["ROGUE"]
+        local name_r = TacoTipConfig.color_class and classc.r or 1
+        local name_g = TacoTipConfig.color_class and classc.g or 1
+        local name_b = TacoTipConfig.color_class and classc.b or 1
+        local title = TacoTipConfig.show_titles and " the Kingslayer" or ""
+        options.exampleTooltip:AddLine(string.format("|cFF%02x%02x%02xKebabstorm%s|r", name_r*255, name_g*255, name_b*255, title))
+        if (TacoTipConfig.show_guild_name) then
+            if (TacoTipConfig.show_guild_rank) then
+                options.exampleTooltip:AddLine("|cFF40FB40Officer of <Drunken Wrath>|r")
+            else
+                options.exampleTooltip:AddLine("|cFF40FB40<Drunken Wrath>|r")
+            end
+        end
+        options.exampleTooltip:AddLine(string.format("Level 80 Undead |cFF%02x%02x%02xRogue|r (Player)", name_r*255, name_g*255, name_b*255), 1, 1, 1)
+        
+        local wide_style = (TacoTipConfig.tip_style == 3 or (TacoTipConfig.tip_style == 2 and IsModifierKeyDown()) and true) or false
+        if (TacoTipConfig.show_talents) then
+            if (wide_style) then
+                options.exampleTooltip:AddDoubleLine("Talents:", "Assassination [51/18/2]", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
+                options.exampleTooltip:AddDoubleLine(" ", "Subtlety [14/3/54]", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
+            else
+                options.exampleTooltip:AddLine("Talents:|cFFFFFFFF Assassination [51/18/2]")
+            end
+        end
+        if (TacoTipConfig.show_gs_player) then
+            local gs_r, gs_b, gs_g = GearScore_GetQuality(6054)
+            if (wide_style) then
+                options.exampleTooltip:AddDoubleLine("GearScore: 6054", "(iLvl: 264)", gs_r, gs_g, gs_b, gs_r, gs_g, gs_b)
+            else
+                options.exampleTooltip:AddLine("GearScore: 6054", gs_r, gs_g, gs_b)
+            end
+        end
+        options.exampleTooltip:Show();
+    end
+    options.exampleTooltip:SetScript("OnEvent", function() showExampleTooltip() end)
+    
+    
     local generalText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     generalText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -18)
     generalText:SetText("Tooltips")
@@ -196,10 +197,19 @@ frame:SetScript("OnShow", function(frame)
             showExampleTooltip()
         end)
     options.gearScorePlayer:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", 140, -60)
-    
+
+    options.showTarget = newCheckbox(
+        "ShowTarget",
+        "Target",
+        "Show unit's target in tooltip",
+        function(self, value) 
+            TacoTipConfig.show_target = value
+        end)
+    options.showTarget:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", -2, -88)    
+
 
     local characterFrameText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    characterFrameText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -132)
+    characterFrameText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -160)
     characterFrameText:SetText("Character Frame")
 
     options.gearScoreCharacter = newCheckbox(
@@ -222,7 +232,7 @@ frame:SetScript("OnShow", function(frame)
     
 
     local extraText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    extraText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -190)
+    extraText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -218)
     extraText:SetText("Extra")
     
     options.showItemLevel = newCheckbox(
@@ -241,7 +251,7 @@ frame:SetScript("OnShow", function(frame)
         function(self, value) 
             TacoTipConfig.show_gs_items = value
         end)
-    options.gearScoreItems:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -32)  
+    options.gearScoreItems:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -32)
     
     options.hideInCombat = newCheckbox(
         "HideInCombat",
@@ -251,47 +261,47 @@ frame:SetScript("OnShow", function(frame)
             TacoTipConfig.hide_in_combat = value
         end)
     options.hideInCombat:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -60)
- 
- 	
+
+
     local styleText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     styleText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 360, -132)
     styleText:SetText("Tooltip Style")
     
-	local dropdown_values = {
-		{"COMPACT", "Always show Compact info"},
-		{"HYBRID", "Compact by default, hold SHIFT for Full info"},
-		{"FULL", "Always show Full info"}
-	}
-	options.styleChoice = newDropDown(
-		"StyleChoice",
-		dropdown_values,
-		function(value)
-			TacoTipConfig.tip_style = value
-			showExampleTooltip()
-		end)
-	options.styleChoice:SetPoint("TOPLEFT", styleText, "BOTTOMLEFT", -20, -4)
-	options.styleChoice:SetValue(TacoTipConfig.tip_style)
-	
-	local althint1 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    local dropdown_values = {
+        {"COMPACT", "Always show Compact info"},
+        {"HYBRID", "Compact by default, hold SHIFT for Full info"},
+        {"FULL", "Always show Full info"}
+    }
+    options.styleChoice = newDropDown(
+        "StyleChoice",
+        dropdown_values,
+        function(value)
+            TacoTipConfig.tip_style = value
+            showExampleTooltip()
+        end)
+    options.styleChoice:SetPoint("TOPLEFT", styleText, "BOTTOMLEFT", -20, -4)
+    options.styleChoice:SetValue(TacoTipConfig.tip_style)
+    
+    local althint1 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint1:SetPoint("TOPLEFT", styleText, "BOTTOMLEFT", -90, -48)
     althint1:SetText("COMPACT")
-	local althint2 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    local althint2 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint2:SetPoint("TOPLEFT", althint1, "BOTTOMLEFT", 0, 0)
     althint2:SetText("HYBRID")
     local althint3 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint3:SetPoint("TOPLEFT", althint2, "BOTTOMLEFT", 0, 0)
     althint3:SetText("FULL")
-	local althint4 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    local althint4 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint4:SetPoint("TOPLEFT", styleText, "BOTTOMLEFT", -26, -48)
     althint4:SetText("Show active spec and GearScore")
-	local althint5 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    local althint5 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint5:SetPoint("TOPLEFT", althint4, "BOTTOMLEFT", 0, 0)
     althint5:SetText("Compact by default, hold SHIFT for Full")
     local althint6 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint6:SetPoint("TOPLEFT", althint5, "BOTTOMLEFT", 0, 0)
     althint6:SetText("Show dual spec, GearScore, average iLvl")
     
-	
+    
     local function getConfig()
         options.useClassColors:SetChecked(TacoTipConfig.color_class)
         options.showTitles:SetChecked(TacoTipConfig.show_titles)
@@ -304,6 +314,7 @@ frame:SetScript("OnShow", function(frame)
         options.averageItemLevel:SetChecked(TacoTipConfig.show_avg_ilvl)
         options.showItemLevel:SetChecked(TacoTipConfig.show_item_level)
         options.hideInCombat:SetChecked(TacoTipConfig.hide_in_combat)
+        options.showTarget:SetChecked(TacoTipConfig.show_target)
         options.styleChoice:SetValue(TacoTipConfig.tip_style)
         options.showGuildRanks:SetDisabled(not TacoTipConfig.show_guild_name)
     end
@@ -324,19 +335,20 @@ frame:SetScript("OnShow", function(frame)
     showExampleTooltip()
 
     frame:SetScript("OnShow", function()
-    	getConfig()
-    	options.exampleTooltip:RegisterEvent("MODIFIER_STATE_CHANGED")
-    	showExampleTooltip()
+        getConfig()
+        options.exampleTooltip:RegisterEvent("MODIFIER_STATE_CHANGED")
+        showExampleTooltip()
     end)
     frame:SetScript("OnHide", function()
-    	options.exampleTooltip:UnregisterEvent("MODIFIER_STATE_CHANGED")
+        options.exampleTooltip:UnregisterEvent("MODIFIER_STATE_CHANGED")
     end)
 end)
 
 SLASH_TACOTIP1 = "/tacotip";
 SLASH_TACOTIP2 = "/tooltip";
-SLASH_TACOTIP3 = "/gs";
-SLASH_TACOTIP4 = "/gearscore";
+SLASH_TACOTIP3 = "/tt";
+SLASH_TACOTIP4 = "/gs";
+SLASH_TACOTIP5 = "/gearscore";
 SlashCmdList["TACOTIP"] = function(msg)
     InterfaceOptionsFrame_OpenToCategory(addOnName)
     InterfaceOptionsFrame_OpenToCategory(addOnName)

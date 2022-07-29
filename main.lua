@@ -16,8 +16,9 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         text1 = name
     end
     local localizedClass, class = UnitClass(unit)
+    local classc
     if (TacoTipConfig.color_class and localizedClass and class) then
-        local classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class]
+        classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class]
         --GameTooltipTextLeft1:SetTextColor(classc.r, classc.g, classc.b)
         text1 = string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, text1)
         text2 = string.gsub(text2, localizedClass, string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, localizedClass), 1)
@@ -45,36 +46,65 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     if (text3) then
         GameTooltipTextLeft3:SetText(text3)
     end
-    
+
     if (not TacoTipConfig.hide_in_combat or not InCombatLockdown()) then 
         local guid = UnitGUID(unit)
-        local spec = IGetActiveSpecByGUID(guid)
-        if (spec and TacoTipConfig.show_talents) then
-            local p1, p2, p3 = IGetTotalTalentPointsByGUID(guid)
-            self:AddLine(string.format("Talents:|cFFFFFFFF %s [%d/%d/%d]", spec, p1, p2, p3))
+        if (TacoTipConfig.show_talents) then
+            local spec = IGetActiveSpecByGUID(guid)
+            if (spec) then
+                local p1, p2, p3 = IGetTotalTalentPointsByGUID(guid)
+                self:AddLine(string.format("Talents:|cFFFFFFFF %s [%d/%d/%d]", spec, p1, p2, p3))
+            end
         end
+
+        if (TacoTipConfig.show_gs_player) then
+            local gearscore = GearScore_GetScore(unit)
+            if (gearscore > 0) then
+                local r, g, b = GearScore_GetQuality(gearscore)
+                self:AddLine("|cFFFFFFFFGearScore:|r "..gearscore, r, g, b)
+            end
+        end
+    end
     
-        --local cacheTimeTalents, cacheTimeInventory = IGetLastCacheTime(guid)
-        --if (cacheTimeInventory ~= 0) then
-        local gearscore = GearScore_GetScore(unit)
-        if (gearscore > 0 and TacoTipConfig.show_gs_player) then
-            local r, g, b = GearScore_GetQuality(gearscore)
-            self:AddLine("|cFFFFFFFFGearScore:|r "..gearscore, r, g, b)
+    if (TacoTipConfig.show_target) then
+        local unitTarget = unit .. "target"
+        local targetName = UnitName(unitTarget)
+        if (targetName) then
+            if (UnitIsUnit(unitTarget, unit)) then
+                self:AddLine("Target: Self", 1, 1, 1)
+            elseif (UnitIsUnit(unitTarget, "player")) then
+                self:AddLine("Target: You", 1, 1, 1)
+            elseif (UnitIsPlayer(unitTarget)) then
+                if (classc) then
+                    self:AddLine(string.format("Target: |cFF%02x%02x%02x%s|r (Player)", classc.r*255, classc.g*255, classc.b*255, targetName), 1, 1, 1)
+                else
+                    self:AddLine("Target: "..targetName.." (Player)", 1, 1, 1)
+                end
+            elseif (UnitIsUnit(unitTarget, "pet") or UnitIsOtherPlayersPet(unitTarget)) then
+                self:AddLine("Target: "..targetName.." (Pet)", 1, 1, 1)
+            else
+                self:AddLine("Target: "..targetName, 1, 1, 1)
+            end
+        else
+            self:AddLine("Target: None", 1, 1, 1)
         end
     end
 end)
 
 local function itemToolTipHook(self)
-    if (TacoTipConfig.show_item_level) then
-        local ilvl = select(4, GetItemInfo(select(2, self:GetItem())))
-        if (ilvl and ilvl > 1) then
-            self:AddLine("Item Level "..ilvl, 1, 1, 1)
+    local _, itemLink = self:GetItem()
+    if (itemLink) then
+        if (TacoTipConfig.show_item_level) then
+            local ilvl = select(4, GetItemInfo(itemLink))
+            if (ilvl and ilvl > 1) then
+                self:AddLine("Item Level "..ilvl, 1, 1, 1)
+            end
         end
-    end
-    if (TacoTipConfig.show_gs_items and IsEquippableItem(self:GetItem())) then
-        local gs = GearScore_GetItemScore(self:GetItem())
-        if (gs and gs > 1) then
-            self:AddLine("GearScore: "..gs, 1, 1, 1)
+        if (TacoTipConfig.show_gs_items and IsEquippableItem(itemLink)) then
+            local gs = GearScore_GetItemScore(itemLink)
+            if (gs and gs > 1) then
+                self:AddLine("GearScore: "..gs, 1, 1, 1)
+            end
         end
     end
 end
@@ -204,6 +234,7 @@ f:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 --f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:SetScript("OnEvent", onEvent)
 
+-- TODO: use something better than a timed func
 C_Timer.NewTicker(1, function()
     if (not inspector or InCombatLockdown() or not UnitExists("player") or not UnitIsConnected("player") or UnitIsDeadOrGhost("player")) then
         return

@@ -105,7 +105,7 @@ GS_Quality = {
 }
 
 function GearScore_GetQuality(ItemScore)
-    if (not (ItemScore)) then
+    if (not ItemScore) then
         return 0, 0, 0, "Trash"
     end
     if (not isWrath) then
@@ -174,15 +174,16 @@ function GearScore_GetItemScore(ItemLink)
 end
 
 function GearScore_GetScore(Target)
-    if ( UnitIsPlayer(Target) ) then
+    if ( Target and UnitIsPlayer(Target) ) then
         local guid = UnitGUID(Target)
-        if (not guid) then
-            return 0,0
+        
+        if (not UnitIsUnit(Target, "player")) then
+            local _, invTime = IGetLastCacheTime(guid)
+            if(invTime == 0) then
+                return 0,0
+            end
         end
-        local _, invTime = IGetLastCacheTime(guid)
-        if (not UnitIsUnit(Target, "player") and invTime == 0) then
-            return 0,0
-        end
+        
         local PlayerClass, PlayerEnglishClass = UnitClass(Target);
         local GearScore = 0; local PVPScore = 0; local ItemCount = 0; local LevelTotal = 0; local TitanGrip = 1; local TempEquip = {}; local TempPVPScore = 0; local TempScore = 0
 

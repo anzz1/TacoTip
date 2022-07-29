@@ -1,7 +1,8 @@
 -- TODO: for wotlk, 2 talent groups !
+-- TODO: save honor data too ?
 
--- cache_players.talents.group.tab
--- cache_players.inventory.
+-- cache_players.talents.group.tab.index
+-- cache_players.inventory.slot
 
 local user_cache_first
 local user_cache_last
@@ -16,6 +17,20 @@ INSPECTOR_MAX_CACHE = 150
 INSPECTOR_INSPECT_DELAY = 2
 INSPECTOR_MAX_QUEUE = 20
 INSPECTOR_REFRESH_DELAY = 10
+
+-- TODO: localization
+local spec_table = {
+    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
+    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
+    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
+    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
+    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
+    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
+    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
+    ["MAGE"] = {"Arcane", "Fire", "Frost"},
+    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
+    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+}
 
 local function getCacheUser(guid)
     if (guid == user_cache_this.guid) then
@@ -205,8 +220,9 @@ end
 -- func IGetInventoryItemLinkByGUID(guid, slot) return link or nil, -1 (not cached) / seconds from cache
 -- func IGetInventoryItemsByGUID(guid) return table or nil
 
--- func GetTalentInfoByGUID(guid, tab, index) return info or nil, -1 (not cached) / seconds from cache
--- (WOTLK) func GetTalentInfo(guid, tab, index, group) return info or nil, -1 (not cached) / seconds from cache
+-- func IGetTalentInfoByGUID(guid, tab, index) return info or nil, -1 (not cached) / seconds from cache
+-- (WOTLK) func IGetTalentInfo(guid, tab, index, group) return info or nil, -1 (not cached) / seconds from cache
+-- (WOTLK) func IGetActiveTalentGroup(unitId/guid) return info or nil, -1 (not cached) / seconds from cache
 
 -- func GetTalentTabInfoByGUID(guid, index)
 
@@ -276,19 +292,6 @@ function IGetTotalTalentPointsByGUID(guid)
     end
     return nil
 end
-
-local spec_table = {
-    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
-    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
-    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
-    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
-    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
-    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
-    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
-    ["MAGE"] = {"Arcane", "Fire", "Frost"},
-    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
-    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
-}
 
 
 function IGetActiveSpecByGUID(guid)
@@ -431,30 +434,42 @@ function DoInspectByGUID(guid)
 end
 
 local function onEvent(self, event, ...)
-    local guid = ...
-    if (not inspector or not guid) then 
-        return
-    end
-    local unit = GUIDToUnitToken(guid)
-    if(not unit or UnitIsUnit(unit, "player")) then
-        return
-    end
-    cacheUserTalents(unit)
-    if(IsInspectInventoryReady(unit)) then
-        --print(GetInventoryItemLink(unit, 1))
-        cacheUserInventory(unit)
-    else
-        local timer = nil
-        timer = C_Timer.NewTicker(0.5, function()
-            local unit2 = GUIDToUnitToken(guid)
-            if (IsInspectInventoryReady(unit2)) then
-                cacheUserInventory(unit2)
-                timer:Cancel()
+    if (event == "UNIT_INVENTORY_CHANGED") then
+        local unit = ...
+        if (unit and unit ~= "player") then
+            local ready = IsInspectInventoryReady(unit)
+            print(event, ..., ready)
+            if(ready and not UnitIsUnit(unit, "player")) then
+                cacheUserInventory(unit)
             end
-        end, 20)
+        end
+    else -- INSPECT_READY
+        local guid = ...
+        if (not inspector or not guid) then 
+            return
+        end
+        local unit = GUIDToUnitToken(guid)
+        if(not unit or UnitIsUnit(unit, "player")) then
+            return
+        end
+        cacheUserTalents(unit)
+        if(IsInspectInventoryReady(unit)) then
+            --print(GetInventoryItemLink(unit, 1))
+            cacheUserInventory(unit)
+        else
+            local timer = nil
+            timer = C_Timer.NewTicker(0.5, function()
+                local unit2 = GUIDToUnitToken(guid)
+                if (IsInspectInventoryReady(unit2)) then
+                    cacheUserInventory(unit2)
+                    timer:Cancel()
+                end
+            end, 20)
+        end
     end
 end
 
 local f = CreateFrame("Frame", nil, UIParent)
 f:RegisterEvent("INSPECT_READY")
+f:RegisterEvent("UNIT_INVENTORY_CHANGED")
 f:SetScript("OnEvent", onEvent)
