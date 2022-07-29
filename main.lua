@@ -137,87 +137,87 @@ PersonalAvgItemLvlText:SetPoint("BOTTOMLEFT",PaperDollFrame,"TOPLEFT",270,-265)
 PersonalAvgItemLvlText:Show()
 
 PaperDollFrame:HookScript("OnShow", function(self)
-	local MyGearScore, MyAverageScore = GearScore_GetScore("player");
-	local r, g, b = GearScore_GetQuality(MyGearScore)
-	if (TacoTipConfig.show_gs_character) then
+    local MyGearScore, MyAverageScore = GearScore_GetScore("player");
+    local r, g, b = GearScore_GetQuality(MyGearScore)
+    if (TacoTipConfig.show_gs_character) then
         PersonalGearScore:SetText(MyGearScore);
         PersonalGearScore:SetTextColor(r, g, b, 1)
-		PersonalGearScore:Show()
-		PersonalGearScoreText:Show()
-	else
-		PersonalGearScore:Hide()
-		PersonalGearScoreText:Hide()
-	end
-	if (TacoTipConfig.show_avg_ilvl) then
+        PersonalGearScore:Show()
+        PersonalGearScoreText:Show()
+    else
+        PersonalGearScore:Hide()
+        PersonalGearScoreText:Hide()
+    end
+    if (TacoTipConfig.show_avg_ilvl) then
         PersonalAvgItemLvl:SetText(MyAverageScore);
         PersonalAvgItemLvl:SetTextColor(r, g, b, 1)
-		PersonalAvgItemLvl:Show()
-		PersonalAvgItemLvlText:Show()
-	else
-		PersonalAvgItemLvl:Hide()
-		PersonalAvgItemLvlText:Hide()
-	end
+        PersonalAvgItemLvl:Show()
+        PersonalAvgItemLvlText:Show()
+    else
+        PersonalAvgItemLvl:Hide()
+        PersonalAvgItemLvlText:Hide()
+    end
 end)
 
 local function RefreshInspectFrame()
-	if (InCombatLockdown()) then
-		InspectGearScore:Hide()
-		InspectGearScoreText:Hide()
-		InspectAvgItemLvl:Hide()
-		InspectAvgItemLvlText:Hide()
-	elseif (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl) then
-		local inspect_gs, inspect_avg = GearScore_GetScore(InspectFrame.unit);
-		local r, g, b = GearScore_GetQuality(inspect_gs)
-		if (TacoTipConfig.show_gs_character) then
-			InspectGearScore:SetText(inspect_gs);
-			InspectGearScore:SetTextColor(r, g, b, 1)
-			InspectGearScore:Show()
-			InspectGearScoreText:Show()
-		else
-			InspectGearScore:Hide()
-			InspectGearScoreText:Hide()
-		end
-		if (TacoTipConfig.show_avg_ilvl) then
-			InspectAvgItemLvl:SetText(inspect_avg);
-			InspectAvgItemLvl:SetTextColor(r, g, b, 1)
-			InspectAvgItemLvl:Show()
-			InspectAvgItemLvlText:Show()
-		else
-			InspectAvgItemLvl:Hide()
-			InspectAvgItemLvlText:Hide()
-		end
+    if (InCombatLockdown()) then
+        InspectGearScore:Hide()
+        InspectGearScoreText:Hide()
+        InspectAvgItemLvl:Hide()
+        InspectAvgItemLvlText:Hide()
+    elseif (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl) then
+        local inspect_gs, inspect_avg = GearScore_GetScore(InspectFrame.unit);
+        local r, g, b = GearScore_GetQuality(inspect_gs)
+        if (TacoTipConfig.show_gs_character) then
+            InspectGearScore:SetText(inspect_gs);
+            InspectGearScore:SetTextColor(r, g, b, 1)
+            InspectGearScore:Show()
+            InspectGearScoreText:Show()
+        else
+            InspectGearScore:Hide()
+            InspectGearScoreText:Hide()
+        end
+        if (TacoTipConfig.show_avg_ilvl) then
+            InspectAvgItemLvl:SetText(inspect_avg);
+            InspectAvgItemLvl:SetTextColor(r, g, b, 1)
+            InspectAvgItemLvl:Show()
+            InspectAvgItemLvlText:Show()
+        else
+            InspectAvgItemLvl:Hide()
+            InspectAvgItemLvlText:Hide()
+        end
     else
-		InspectGearScore:Hide()
-		InspectGearScoreText:Hide()
-		InspectAvgItemLvl:Hide()
-		InspectAvgItemLvlText:Hide()
-	end
+        InspectGearScore:Hide()
+        InspectGearScoreText:Hide()
+        InspectAvgItemLvl:Hide()
+        InspectAvgItemLvlText:Hide()
+    end
 end
 
 local inspect_init = false
 local function InitInspectFrame()
-	inspect_init = true
-	local text1 = InspectModelFrame:CreateFontString("InspectGearScore");
-	text1:SetFont("Fonts\\FRIZQT__.TTF", 10);
-	text1:SetText("0");
-	text1:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",72,-359);
+    inspect_init = true
+    local text1 = InspectModelFrame:CreateFontString("InspectGearScore");
+    text1:SetFont("Fonts\\FRIZQT__.TTF", 10);
+    text1:SetText("0");
+    text1:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",72,-359);
 
-	local text2 = InspectModelFrame:CreateFontString("InspectGearScoreText");
-	text2:SetFont("Fonts\\FRIZQT__.TTF", 10);
-	text2:SetText("GearScore");
-	text2:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",72,-372);
-	
-	local text3 = InspectModelFrame:CreateFontString("InspectAvgItemLvl");
-	text3:SetFont("Fonts\\FRIZQT__.TTF", 10);
-	text3:SetText("0");
-	text3:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",270,-359);
+    local text2 = InspectModelFrame:CreateFontString("InspectGearScoreText");
+    text2:SetFont("Fonts\\FRIZQT__.TTF", 10);
+    text2:SetText("GearScore");
+    text2:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",72,-372);
+    
+    local text3 = InspectModelFrame:CreateFontString("InspectAvgItemLvl");
+    text3:SetFont("Fonts\\FRIZQT__.TTF", 10);
+    text3:SetText("0");
+    text3:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",270,-359);
 
-	local text4 = InspectModelFrame:CreateFontString("InspectAvgItemLvlText");
-	text4:SetFont("Fonts\\FRIZQT__.TTF", 10);
-	text4:SetText("iLvl");
-	text4:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",270,-372);
+    local text4 = InspectModelFrame:CreateFontString("InspectAvgItemLvlText");
+    text4:SetFont("Fonts\\FRIZQT__.TTF", 10);
+    text4:SetText("iLvl");
+    text4:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",270,-372);
 
-	InspectPaperDollFrame:HookScript("OnShow", RefreshInspectFrame);
+    InspectPaperDollFrame:HookScript("OnShow", RefreshInspectFrame);
 end
 
 local function onEvent(self, event, ...)
@@ -244,6 +244,6 @@ C_Timer.NewTicker(1, function()
             InitInspectFrame()
         end
     elseif (InspectFrame and InspectFrame:IsShown()) then
-	   RefreshInspectFrame()
-	end
+       RefreshInspectFrame()
+    end
 end)

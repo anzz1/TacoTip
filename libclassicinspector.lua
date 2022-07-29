@@ -358,9 +358,9 @@ end
 
 local oNotifyInspect = NotifyInspect
 function NotifyInspect(unit)
-	nextInspectTime = time()+INSPECTOR_INSPECT_DELAY
-	--print("inspecting user:",UnitGUID(unit),UnitName(unit))
-	oNotifyInspect(unit)
+    nextInspectTime = time()+INSPECTOR_INSPECT_DELAY
+    --print("inspecting user:",UnitGUID(unit),UnitName(unit))
+    oNotifyInspect(unit)
 end
 
 local function tryInspect(unit)

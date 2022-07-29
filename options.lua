@@ -128,6 +128,9 @@ frame:SetScript("OnShow", function(frame)
                 options.exampleTooltip:AddLine("GearScore: 6054", gs_r, gs_g, gs_b)
             end
         end
+        if (TacoTipConfig.show_target) then
+            options.exampleTooltip:AddLine("Target: None", 1, 1, 1)
+        end
         options.exampleTooltip:Show();
     end
     options.exampleTooltip:SetScript("OnEvent", function() showExampleTooltip() end)
@@ -204,6 +207,7 @@ frame:SetScript("OnShow", function(frame)
         "Show unit's target in tooltip",
         function(self, value) 
             TacoTipConfig.show_target = value
+            showExampleTooltip()
         end)
     options.showTarget:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", -2, -88)    
 
