@@ -174,15 +174,6 @@ function GUIDToUnitToken(guid)
     if(UnitGUID("player") == guid) then
         return "player"
     end
-    if(UnitGUID("target") == guid) then
-        return "target"
-    end
-    if(UnitGUID("focus") == guid) then
-        return "focus"
-    end
-    if(UnitGUID("mouseover") == guid) then
-        return "mouseover"
-    end
     if(IsInGroup() and IsGUIDInGroup(guid)) then
         if(IsInRaid()) then
             for i=1,40 do
@@ -197,6 +188,15 @@ function GUIDToUnitToken(guid)
                 end
             end
         end
+    end
+    if(UnitGUID("target") == guid) then
+        return "target"
+    end
+    if(UnitGUID("focus") == guid) then
+        return "focus"
+    end
+    if(UnitGUID("mouseover") == guid) then
+        return "mouseover"
     end
     if(GetCVar("nameplateShowFriends") == '1' or GetCVar("nameplateShowEnemies") == '1') then
         local nameplatesArray = C_NamePlate.GetNamePlates()

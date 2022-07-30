@@ -143,7 +143,7 @@ frame:SetScript("OnShow", function(frame)
     options.useClassColors = newCheckbox(
         "ClassColors",
         "Class Color",
-        "",
+        "Color class names in tooltips",
         function(self, value) 
             TacoTipConfig.color_class = value
             showExampleTooltip()
@@ -153,7 +153,7 @@ frame:SetScript("OnShow", function(frame)
     options.showTitles = newCheckbox(
         "ShowTitles",
         "Title",
-        "",
+        "Show player's title in tooltips",
         function(self, value) 
             TacoTipConfig.show_titles = value
             showExampleTooltip()
@@ -163,7 +163,7 @@ frame:SetScript("OnShow", function(frame)
     options.showGuildNames = newCheckbox(
         "GuildNames",
         "Guild Name",
-        "",
+        "Show guild name in tooltips",
         function(self, value) 
             TacoTipConfig.show_guild_name = value
             options.showGuildRanks:SetDisabled(not value)
@@ -174,7 +174,7 @@ frame:SetScript("OnShow", function(frame)
     options.showGuildRanks = newCheckbox(
         "GuildRanks",
         "Guild Rank",
-        "",
+        "Show guild rank in tooltips",
         function(self, value) 
             TacoTipConfig.show_guild_rank = value
             showExampleTooltip()
@@ -184,7 +184,7 @@ frame:SetScript("OnShow", function(frame)
     options.showTalents = newCheckbox(
         "Talents",
         "Talents",
-        "Show talents and specialization on player tooltips",
+        "Show talents and specialization in tooltips",
         function(self, value) 
             TacoTipConfig.show_talents = value
             showExampleTooltip()
@@ -194,7 +194,7 @@ frame:SetScript("OnShow", function(frame)
     options.gearScorePlayer = newCheckbox(
         "GearScorePlayer",
         "GearScore",
-        "",
+        "Show players GearScore in tooltips",
         function(self, value) 
             TacoTipConfig.show_gs_player = value
             showExampleTooltip()
@@ -204,7 +204,7 @@ frame:SetScript("OnShow", function(frame)
     options.showTarget = newCheckbox(
         "ShowTarget",
         "Target",
-        "Show unit's target in tooltip",
+        "Show unit's target in tooltips",
         function(self, value) 
             TacoTipConfig.show_target = value
             showExampleTooltip()
@@ -219,7 +219,7 @@ frame:SetScript("OnShow", function(frame)
     options.gearScoreCharacter = newCheckbox(
         "GearScoreCharacter",
         "GearScore",
-        "Show GearScore on character frame",
+        "Show GearScore in character frame",
         function(self, value) 
             TacoTipConfig.show_gs_character = value
         end)
@@ -228,7 +228,7 @@ frame:SetScript("OnShow", function(frame)
     options.averageItemLevel = newCheckbox(
         "AverageItemLevel",
         "Average iLvl",
-        "Show Average Item Level on character frame",
+        "Show Average Item Level in character frame",
         function(self, value) 
             TacoTipConfig.show_avg_ilvl = value
         end)
@@ -251,7 +251,7 @@ frame:SetScript("OnShow", function(frame)
     options.gearScoreItems = newCheckbox(
         "GearScoreItems",
         "Show Item GearScore",
-        "Show GearScore on item tooltips",
+        "Show GearScore in item tooltips",
         function(self, value) 
             TacoTipConfig.show_gs_items = value
         end)
@@ -260,7 +260,7 @@ frame:SetScript("OnShow", function(frame)
     options.hideInCombat = newCheckbox(
         "HideInCombat",
         "Hide In Combat",
-        "Hide cached results (gearscore & specialization) in combat",
+        "Hide gearscore & talents in combat (low-performance mode)",
         function(self, value) 
             TacoTipConfig.hide_in_combat = value
         end)

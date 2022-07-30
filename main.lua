@@ -2,71 +2,73 @@
 GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     if (not inspector) then return end
     local name, unit = self:GetUnit()
-    if (not unit or not UnitIsPlayer(unit)) then 
+    if (not unit or not UnitExists(unit)) then 
         return
     end
     
-    local text1 = GameTooltipTextLeft1:GetText()
-    if(not text1 or text1 == "") then return; end
-    local text2 = GameTooltipTextLeft2:GetText()
-    if(not text2 or text2 == "") then return; end
-    local text3 = GameTooltipTextLeft3:GetText()
-
-    if (not TacoTipConfig.show_titles and string.find(text1, name)) then
-        text1 = name
-    end
-    local localizedClass, class = UnitClass(unit)
-    local classc
-    if (TacoTipConfig.color_class and localizedClass and class) then
-        classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class]
-        --GameTooltipTextLeft1:SetTextColor(classc.r, classc.g, classc.b)
-        text1 = string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, text1)
-        text2 = string.gsub(text2, localizedClass, string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, localizedClass), 1)
-        if (text3) then
-            text3 = string.gsub(text3, localizedClass, string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, localizedClass), 1)
-        end
-    end
-    local guildName, guildRankName = GetGuildInfo(unit);
-    if (guildName and guildRankName) then
-        if (TacoTipConfig.show_guild_name) then
-            if (TacoTipConfig.show_guild_rank) then 
-                text2 = string.gsub(text2, guildName, string.format("|cFF40FB40%s of <%s>|r", guildRankName, guildName), 1)
-            else
-                text2 = string.gsub(text2, guildName, string.format("|cFF40FB40<%s>|r", guildName), 1)
-            end
-        else
-            if (string.find(text2, guildName)) then
-                text2 = ""
-            end
-        end
-    end
-
-    GameTooltipTextLeft1:SetText(text1)
-    GameTooltipTextLeft2:SetText(text2)
-    if (text3) then
-        GameTooltipTextLeft3:SetText(text3)
-    end
-
-    if (not TacoTipConfig.hide_in_combat or not InCombatLockdown()) then 
-        local guid = UnitGUID(unit)
-        if (TacoTipConfig.show_talents) then
-            local spec = IGetActiveSpecByGUID(guid)
-            if (spec) then
-                local p1, p2, p3 = IGetTotalTalentPointsByGUID(guid)
-                self:AddLine(string.format("Talents:|cFFFFFFFF %s [%d/%d/%d]", spec, p1, p2, p3))
-            end
-        end
-
-        if (TacoTipConfig.show_gs_player) then
-            local gearscore = GearScore_GetScore(unit)
-            if (gearscore > 0) then
-                local r, g, b = GearScore_GetQuality(gearscore)
-                self:AddLine("|cFFFFFFFFGearScore:|r "..gearscore, r, g, b)
-            end
-        end
-    end
+    if (UnitIsPlayer(unit)) then
+        local text1 = GameTooltipTextLeft1:GetText()
+        if(not text1 or text1 == "") then return; end
+        local text2 = GameTooltipTextLeft2:GetText()
+        if(not text2 or text2 == "") then return; end
+        local text3 = GameTooltipTextLeft3:GetText()
     
-    if (TacoTipConfig.show_target) then
+        if (not TacoTipConfig.show_titles and string.find(text1, name)) then
+            text1 = name
+        end
+        local localizedClass, class = UnitClass(unit)
+        local classc
+        if (TacoTipConfig.color_class and localizedClass and class) then
+            classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class]
+            --GameTooltipTextLeft1:SetTextColor(classc.r, classc.g, classc.b)
+            text1 = string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, text1)
+            text2 = string.gsub(text2, localizedClass, string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, localizedClass), 1)
+            if (text3) then
+                text3 = string.gsub(text3, localizedClass, string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, localizedClass), 1)
+            end
+        end
+        local guildName, guildRankName = GetGuildInfo(unit);
+        if (guildName and guildRankName) then
+            if (TacoTipConfig.show_guild_name) then
+                if (TacoTipConfig.show_guild_rank) then 
+                    text2 = string.gsub(text2, guildName, string.format("|cFF40FB40%s of <%s>|r", guildRankName, guildName), 1)
+                else
+                    text2 = string.gsub(text2, guildName, string.format("|cFF40FB40<%s>|r", guildName), 1)
+                end
+            else
+                if (string.find(text2, guildName)) then
+                    text2 = ""
+                end
+            end
+        end
+    
+        GameTooltipTextLeft1:SetText(text1)
+        GameTooltipTextLeft2:SetText(text2)
+        if (text3) then
+            GameTooltipTextLeft3:SetText(text3)
+        end
+    
+        if (not TacoTipConfig.hide_in_combat or not InCombatLockdown()) then
+            local guid = UnitGUID(unit)
+            if (TacoTipConfig.show_talents) then
+                local spec = IGetActiveSpecByGUID(guid)
+                if (spec) then
+                    local p1, p2, p3 = IGetTotalTalentPointsByGUID(guid)
+                    self:AddLine(string.format("Talents:|cFFFFFFFF %s [%d/%d/%d]", spec, p1, p2, p3))
+                end
+            end
+    
+            if (TacoTipConfig.show_gs_player) then
+                local gearscore = GearScore_GetScore(unit)
+                if (gearscore > 0) then
+                    local r, g, b = GearScore_GetQuality(gearscore)
+                    self:AddLine("|cFFFFFFFFGearScore:|r "..gearscore, r, g, b)
+                end
+            end
+        end
+    end
+
+    if (TacoTipConfig.show_target and not UnitIsUnit(unit, "player")) then
         local unitTarget = unit .. "target"
         local targetName = UnitName(unitTarget)
         if (targetName) then
