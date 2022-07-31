@@ -16,15 +16,18 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         if (not TacoTipConfig.show_titles and string.find(text1, name)) then
             text1 = name
         end
-        local localizedClass, class = UnitClass(unit)
-        local classc
-        if (TacoTipConfig.color_class and localizedClass and class) then
-            classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class]
-            --GameTooltipTextLeft1:SetTextColor(classc.r, classc.g, classc.b)
-            text1 = string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, text1)
-            text2 = string.gsub(text2, localizedClass, string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, localizedClass), 1)
-            if (text3) then
-                text3 = string.gsub(text3, localizedClass, string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, localizedClass), 1)
+        if (TacoTipConfig.color_class) then
+            local localizedClass, class = UnitClass(unit)
+            if (localizedClass and class) then
+                local classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class]
+                if (classc) then
+                    --GameTooltipTextLeft1:SetTextColor(classc.r, classc.g, classc.b)
+                    text1 = string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, text1)
+                    text2 = string.gsub(text2, localizedClass, string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, localizedClass), 1)
+                    if (text3) then
+                        text3 = string.gsub(text3, localizedClass, string.format("|cFF%02x%02x%02x%s|r", classc.r*255, classc.g*255, classc.b*255, localizedClass), 1)
+                    end
+                end
             end
         end
         local guildName, guildRankName = GetGuildInfo(unit);
@@ -77,6 +80,13 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
             elseif (UnitIsUnit(unitTarget, "player")) then
                 self:AddLine("Target: You", 1, 1, 1)
             elseif (UnitIsPlayer(unitTarget)) then
+                local classc
+                if (TacoTipConfig.color_class) then
+                    local _, targetClass = UnitClass(unitTarget)
+                    if (targetClass) then
+                        classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[targetClass]
+                    end
+                end
                 if (classc) then
                     self:AddLine(string.format("Target: |cFF%02x%02x%02x%s|r (Player)", classc.r*255, classc.g*255, classc.b*255, targetName), 1, 1, 1)
                 else
