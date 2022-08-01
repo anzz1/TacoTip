@@ -71,7 +71,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         end
     end
 
-    if (TacoTipConfig.show_target and not UnitIsUnit(unit, "player")) then
+    if (TacoTipConfig.show_target and not UnitIsUnit(unit, "player") and UnitIsConnected(unit)) then
         local unitTarget = unit .. "target"
         local targetName = UnitName(unitTarget)
         if (targetName) then
@@ -233,17 +233,28 @@ local function InitInspectFrame()
 end
 
 local function onEvent(self, event, ...)
-    local MyGearScore, MyAverageScore = GearScore_GetScore("player");
-    local r, g, b = GearScore_GetQuality(MyGearScore)
-    PersonalGearScore:SetText(MyGearScore);
-    PersonalGearScore:SetTextColor(r, g, b, 1)
-    PersonalAvgItemLvl:SetText(MyAverageScore);
-    PersonalAvgItemLvl:SetTextColor(r, g, b, 1)
+    if (event == "PLAYER_EQUIPMENT_CHANGED") then
+        local MyGearScore, MyAverageScore = GearScore_GetScore("player");
+        local r, g, b = GearScore_GetQuality(MyGearScore)
+        PersonalGearScore:SetText(MyGearScore);
+        PersonalGearScore:SetTextColor(r, g, b, 1)
+        PersonalAvgItemLvl:SetText(MyAverageScore);
+        PersonalAvgItemLvl:SetTextColor(r, g, b, 1)
+    else -- UNIT_TARGET
+        local unit = ...
+        if (unit) then
+            local _, ttUnit = GameTooltip:GetUnit()
+            if (ttUnit and UnitIsUnit(unit, ttUnit)) then
+                GameTooltip:SetUnit(unit)
+            end
+        end
+    end
 end
 
 local f = CreateFrame("Frame", nil, UIParent)
 f:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 --f:RegisterEvent("PLAYER_ENTERING_WORLD")
+f:RegisterEvent("UNIT_TARGET")
 f:SetScript("OnEvent", onEvent)
 
 -- TODO: use something better than a timed func
