@@ -320,10 +320,18 @@ local function onEvent(self, event, ...)
         PersonalGearScore:SetTextColor(r, g, b, 1)
         PersonalAvgItemLvl:SetText(MyAverageScore);
         PersonalAvgItemLvl:SetTextColor(r, g, b, 1)
-    else -- MODIFIER_STATE_CHANGED
+    elseif (event == "MODIFIER_STATE_CHANGED") then
         local _, unit = GameTooltip:GetUnit()
         if (unit and UnitIsPlayer(unit)) then
             GameTooltip:SetUnit(unit)
+        end
+    else -- UNIT_TARGET
+        local unit = ...
+        if (unit) then
+            local _, ttUnit = GameTooltip:GetUnit()
+            if (ttUnit and UnitIsUnit(unit, ttUnit)) then
+                GameTooltip:SetUnit(unit)
+            end
         end
     end
 end
@@ -332,6 +340,7 @@ do
     local f = CreateFrame("Frame")
     f:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
     f:RegisterEvent("MODIFIER_STATE_CHANGED")
+    f:RegisterEvent("UNIT_TARGET")
     f:SetScript("OnEvent", onEvent)
 end
 
