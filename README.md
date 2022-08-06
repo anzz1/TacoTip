@@ -6,4 +6,4 @@ LibGearScore & LibClassicInspector are to be put into proper libraries later so 
 
 Any input / feedback is welcome !
 
-![tacotipcfg](https://user-images.githubusercontent.com/13628128/180063091-610dda80-90a1-44b6-9641-e33aca779a1b.png)
+![TacoTip](https://user-images.githubusercontent.com/13628128/183254553-714deeaa-95d2-4e23-8197-e8820d312fe2.png)
