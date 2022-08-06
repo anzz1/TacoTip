@@ -8,7 +8,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
 
     local wide_style = (TacoTipConfig.tip_style == 3 or (TacoTipConfig.tip_style == 2 and IsModifierKeyDown()) and true) or false
 
-    if (TacoTipConfig.show_target and UnitIsConnected(unit)) then -- and not UnitIsUnit(unit, "player")) then
+    if (TacoTipConfig.show_target and UnitIsConnected(unit) and not UnitIsUnit(unit, "player")) then
         local unitTarget = unit .. "target"
         local targetName = UnitName(unitTarget)
         if (targetName) then
