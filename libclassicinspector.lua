@@ -4,6 +4,8 @@
 -- cache_players.talents.group.tab.index
 -- cache_players.inventory.slot
 
+local isWrath = string.byte(GetBuildInfo(), 1) == 51
+
 local user_cache_first
 local user_cache_last
 local user_cache_len = 0
@@ -58,7 +60,7 @@ local function addCacheUser(guid, inventory, talents)
     if(talents) then
         user.talents = talents
     else
-        user.talents = {[1] = {[1] = {}, [2] = {}, [3] = {}}, [2] = {[1] = {}, [2] = {}, [3] = {}}, ["time"] = 0}
+        user.talents = {[1] = {[1] = {}, [2] = {}, [3] = {}}, [2] = {[1] = {}, [2] = {}, [3] = {}}, ["time"] = 0, ["active"] = 0}
     end
 
     if (not user_cache_first) then
@@ -127,11 +129,16 @@ local function cacheUserInventory(unit)
     inventoryReadyCallback(guid)
 end
 
+--dbg_talent = nil
+--dbg_wrath = isWrath
+
 local function cacheUserTalents(unit)
-    local talents = {[1] = {[1] = {}, [2] = {}, [3] = {}}, [2] = {[1] = {}, [2] = {}, [3] = {}}, ["time"] = time()}
-    for i = 1, 3 do  -- GetNumTalentTabs
-        for j = 1, GetNumTalents(i) do
-            talents[1][i][j] = select(5, GetTalentInfo(i, j, true))
+    local talents = {[1] = {[1] = {}, [2] = {}, [3] = {}}, [2] = {[1] = {}, [2] = {}, [3] = {}}, ["time"] = time(), ["active"] = (isWrath and GetActiveTalentGroup(true, false) or 1)}
+    for x = 1, (isWrath and 2 or 1) do
+        for i = 1, 3 do  -- GetNumTalentTabs
+            for j = 1, GetNumTalents(i, true, false) do
+                talents[x][i][j] = select(5, GetTalentInfo(i, j, true, false, x))
+            end
         end
     end
     local guid = UnitGUID(unit)
@@ -144,6 +151,8 @@ local function cacheUserTalents(unit)
     end
     -- fire TALENTS_READY(unit, guid, talents) callback
     talentsReadyCallback(guid)
+    
+    --dbg_talent = talents
 end
 
 local function hasCacheUser(guid)
@@ -239,6 +248,10 @@ end
 -- callback TALENTS_READY (guid)
 -- callback INVENTORY_READY (guid)
 
+function IGetSpecializationName(class, tabIndex)
+    return spec_table[class][tabIndex]
+end
+
 function IGetInventoryItemLinkByGUID(guid, slot)
     if (not guid or not slot) then
         return nil
@@ -253,30 +266,53 @@ function IGetInventoryItemLinkByGUID(guid, slot)
     return nil
 end
 
-function IGetTalentTabInfoByGUID(guid, index)
-    if (not guid or not index or index < 1 or index > 3) then
-        return nil
-    end
+-- TBD
+--function IGetTalentTabInfoByGUID(guid, index)
+--    if (not guid or not index or index < 1 or index > 3) then
+--        return nil
+--    end
+--    if (guid == UnitGUID("player")) then
+--        return GetTalentTabInfo(index, false)
+--    end
+--    local user = getCacheUser2(guid)
+--    if (user) then
+--        local pointsSpent = 0
+--        for _, v in ipairs(user.talents[1][index]) do
+--            pointsSpent = pointsSpent + v
+--        end
+--        return "Fire", nil, pointsSpent, "fileName"
+--    end
+--    return nil
+--end
+
+
+function IGetActiveTalentGroupByGUID(guid)
     if (guid == UnitGUID("player")) then
-        return GetTalentTabInfo(index, false)
+        return isWrath and GetActiveTalentGroup(false, false) or 1
     end
     local user = getCacheUser2(guid)
-    if (user) then
-        local pointsSpent = 0
-        for _, v in ipairs(user.talents[1][index]) do
-            pointsSpent = pointsSpent + v
-        end
-        return "Fire", nil, pointsSpent, "fileName"
+    if (user and user.talents["active"] > 0) then
+        return user.talents["active"]
     end
     return nil
 end
 
-function IGetTotalTalentPointsByGUID(guid)
+
+function IGetTotalTalentPointsByGUID(guid, group)
+    if (not group) then
+        group = IGetActiveTalentGroupByGUID(guid)
+        if (not group) then
+            return nil
+        end
+    end
+    if (not isWrath and group ~= 1) then
+        return nil
+    end
     local talents = {0, 0, 0}
     if (guid == UnitGUID("player")) then
         for i = 1, 3 do  -- GetNumTalentTabs
             for j = 1, GetNumTalents(i) do
-                talents[i] = talents[i] + select(5, GetTalentInfo(i, j, false))
+                talents[i] = talents[i] + select(5, GetTalentInfo(i, j, false, false, group))
             end
         end
         return unpack(talents)
@@ -284,7 +320,7 @@ function IGetTotalTalentPointsByGUID(guid)
     local user = getCacheUser2(guid)
     if (user) then
         for i = 1, 3 do  -- GetNumTalentTabs
-            for _, v in ipairs(user.talents[1][i]) do
+            for _, v in ipairs(user.talents[group][i]) do
                 talents[i] = talents[i] + v
             end
         end
@@ -294,7 +330,16 @@ function IGetTotalTalentPointsByGUID(guid)
 end
 
 
-function IGetActiveSpecByGUID(guid)
+function IGetMostPointsSpecByGUID(guid, group)
+    if (not group) then
+        group = IGetActiveTalentGroupByGUID(guid)
+        if (not group) then
+            return nil
+        end
+    end
+    if (not isWrath and group ~= 1) then
+        return nil
+    end
     local most = 0
     local spec = nil
     local _, englishClass = GetPlayerInfoByGUID(guid)
@@ -302,11 +347,11 @@ function IGetActiveSpecByGUID(guid)
         for i = 1, 3 do  -- GetNumTalentTabs
             local points = 0
             for j = 1, GetNumTalents(i) do
-                points = points + select(5, GetTalentInfo(i, j, false))
+                points = points + select(5, GetTalentInfo(i, j, false, false, group))
             end
             if (points > most) then
                 most = points
-                spec = spec_table[englishClass][i]
+                spec = IGetSpecializationName(englishClass, i)
             end
         end
         return spec
@@ -315,12 +360,12 @@ function IGetActiveSpecByGUID(guid)
     if (user) then
         for i = 1, 3 do  -- GetNumTalentTabs
             local points = 0
-            for _, v in ipairs(user.talents[1][i]) do
+            for _, v in ipairs(user.talents[group][i]) do
                 points = points + v
             end
             if (points > most) then
                 most = points
-                spec = spec_table[englishClass][i]
+                spec = IGetSpecializationName(englishClass, i)
             end
         end
         return spec
@@ -390,7 +435,7 @@ C_Timer.NewTicker(1, function()
             for i=#inspectQueue,1,-1 do
                 local unit = GUIDToUnitToken(inspectQueue[i])
                 table.remove(inspectQueue, i)
-                if (tryInspect(unit)) then
+                if (unit and tryInspect(unit)) then
                     return
                 end
             end
@@ -434,6 +479,9 @@ function DoInspectByGUID(guid)
 end
 
 local function onEvent(self, event, ...)
+    if (not inspector) then 
+        return
+    end
     if (event == "UNIT_INVENTORY_CHANGED") then
         local unit = ...
         if (unit and (not UnitIsUnit(unit, "player")) and IsInspectInventoryReady(unit)) then
@@ -441,7 +489,7 @@ local function onEvent(self, event, ...)
         end
     else -- INSPECT_READY
         local guid = ...
-        if (not inspector or not guid) then 
+        if (not guid) then 
             return
         end
         local unit = GUIDToUnitToken(guid)
@@ -453,19 +501,21 @@ local function onEvent(self, event, ...)
             --print(GetInventoryItemLink(unit, 1))
             cacheUserInventory(unit)
         else
-            local timer = nil
-            timer = C_Timer.NewTicker(0.5, function()
-                local unit2 = GUIDToUnitToken(guid)
-                if (IsInspectInventoryReady(unit2)) then
-                    cacheUserInventory(unit2)
-                    timer:Cancel()
+            local timer = {["guid"] = guid}
+            timer.ticker = C_Timer.NewTicker(0.5, function()
+                timer.unit = GUIDToUnitToken(timer.guid)
+                if (timer.unit and IsInspectInventoryReady(timer.unit)) then
+                    cacheUserInventory(timer.unit)
+                    timer.ticker:Cancel()
                 end
             end, 20)
         end
     end
 end
 
-local f = CreateFrame("Frame", nil, UIParent)
-f:RegisterEvent("INSPECT_READY")
-f:RegisterEvent("UNIT_INVENTORY_CHANGED")
-f:SetScript("OnEvent", onEvent)
+do
+    local f = CreateFrame("Frame")
+    f:RegisterEvent("INSPECT_READY")
+    f:RegisterEvent("UNIT_INVENTORY_CHANGED")
+    f:SetScript("OnEvent", onEvent)
+end

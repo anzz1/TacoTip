@@ -97,9 +97,9 @@ frame:SetScript("OnShow", function(frame)
         options.exampleTooltip:SetOwner(frame, "ANCHOR_NONE")
         options.exampleTooltip:SetPoint("TOPLEFT", description, "TOPLEFT", 340, 0)
         local classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)["ROGUE"]
-        local name_r = TacoTipConfig.color_class and classc.r or 1
-        local name_g = TacoTipConfig.color_class and classc.g or 1
-        local name_b = TacoTipConfig.color_class and classc.b or 1
+        local name_r = TacoTipConfig.color_class and classc and classc.r or 1
+        local name_g = TacoTipConfig.color_class and classc and classc.g or 1
+        local name_b = TacoTipConfig.color_class and classc and classc.b or 1
         local title = TacoTipConfig.show_titles and " the Kingslayer" or ""
         options.exampleTooltip:AddLine(string.format("|cFF%02x%02x%02xKebabstorm%s|r", name_r*255, name_g*255, name_b*255, title))
         if (TacoTipConfig.show_guild_name) then
@@ -112,6 +112,14 @@ frame:SetScript("OnShow", function(frame)
         options.exampleTooltip:AddLine(string.format("Level 80 Undead |cFF%02x%02x%02xRogue|r (Player)", name_r*255, name_g*255, name_b*255), 1, 1, 1)
         
         local wide_style = (TacoTipConfig.tip_style == 3 or (TacoTipConfig.tip_style == 2 and IsModifierKeyDown()) and true) or false
+        
+        if (TacoTipConfig.show_target) then
+            if (wide_style) then
+                options.exampleTooltip:AddDoubleLine("Target:", "None", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
+            else
+                options.exampleTooltip:AddLine("Target: |cFF808080None|r")
+            end
+        end        
         if (TacoTipConfig.show_talents) then
             if (wide_style) then
                 options.exampleTooltip:AddDoubleLine("Talents:", "Assassination [51/18/2]", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
@@ -127,9 +135,6 @@ frame:SetScript("OnShow", function(frame)
             else
                 options.exampleTooltip:AddLine("GearScore: 6054", gs_r, gs_g, gs_b)
             end
-        end
-        if (TacoTipConfig.show_target) then
-            options.exampleTooltip:AddLine("Target: None", 1, 1, 1)
         end
         options.exampleTooltip:Show();
     end

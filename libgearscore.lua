@@ -6,10 +6,7 @@
 
 -- if getunitgearscore nil doinspect unit
 
-local isRetail = WOW_PROJECT_ID == (WOW_PROJECT_MAINLINE or 1)
-local isClassic = WOW_PROJECT_ID == (WOW_PROJECT_CLASSIC or 2)
-local isBCC = WOW_PROJECT_ID == (WOW_PROJECT_BURNING_CRUSADE_CLASSIC or 5)
-local isWrath = false
+local isWrath = string.byte(GetBuildInfo(), 1) == 51
 
 GS_ItemTypes = {
     ["INVTYPE_RELIC"] = { ["SlotMOD"] = 0.3164, ["ItemSlot"] = 18, ["Enchantable"] = false},
