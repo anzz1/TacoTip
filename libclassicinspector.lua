@@ -98,6 +98,7 @@ local function inventoryReadyCallback(guid)
     if (unit and UnitGUID(unit) == guid) then
         GameTooltip:SetUnit(unit)
     end
+    TT_CB_TEST_InvReady(guid)
 end
 
 local function talentsReadyCallback(guid)
@@ -397,16 +398,41 @@ function IGetLastCacheTime(guid)
     return 0, 0
 end
 
+-- fix blizzard CanInspect
+local skip_error = false
+hooksecurefunc("CanInspect", function(unit, showError)
+    if (not showError) then
+        skip_error = true
+    end
+end)
+
+UIErrorsFrame.oAddMessage = UIErrorsFrame.AddMessage
+UIErrorsFrame.AddMessage = function(self, ...)
+    if (skip_error) then
+        local msg = ...
+        if (msg == ERR_UNIT_NOT_FOUND or msg == ERR_INVALID_INSPECT_TARGET) then
+            skip_error = false
+            return
+        end
+    end
+    skip_error = false
+    self:oAddMessage(...)
+end
+
 function ICanInspect(unit)
     return unit and (not InCombatLockdown()) and UnitExists(unit) and UnitIsPlayer(unit) and UnitIsConnected(unit) and (not UnitIsDeadOrGhost(unit)) and (not UnitIsUnit(unit, "player")) and CheckInteractDistance(unit, 1) and (not InspectFrame or not InspectFrame:IsShown()) and CanInspect(unit, false)
 end
 
-local oNotifyInspect = NotifyInspect
-function NotifyInspect(unit)
+--local oNotifyInspect = NotifyInspect
+--function NotifyInspect(unit)
+--    nextInspectTime = time()+INSPECTOR_INSPECT_DELAY
+--    --print("inspecting user:",UnitGUID(unit),UnitName(unit))
+--    oNotifyInspect(unit)
+--end
+
+hooksecurefunc("NotifyInspect", function()
     nextInspectTime = time()+INSPECTOR_INSPECT_DELAY
-    --print("inspecting user:",UnitGUID(unit),UnitName(unit))
-    oNotifyInspect(unit)
-end
+end)
 
 local function tryInspect(unit)
     if (ICanInspect(unit)) then

@@ -11,6 +11,14 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     if (TacoTipConfig.show_target and UnitIsConnected(unit) and not UnitIsUnit(unit, "player")) then
         local unitTarget = unit .. "target"
         local targetName = UnitName(unitTarget)
+        local inDiffMap = false
+
+        if (IsInGroup() and (IsInRaid() and UnitInRaid(unit) or UnitInParty(unit))) then
+            if (C_Map.GetBestMapForUnit(unit) ~= C_Map.GetBestMapForUnit("player")) then
+                inDiffMap = true
+            end
+        end
+
         if (targetName) then
             if (UnitIsUnit(unitTarget, unit)) then
                 if (wide_style) then
@@ -58,10 +66,12 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                     self:AddLine("Target: |cFFFFFFFF"..targetName.."|r")
                 end
             end
-        elseif (wide_style) then
-            self:AddDoubleLine("Target:", "None", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
-        else
-            self:AddLine("Target: |cFF808080None|r")
+        elseif (not inDiffMap) then
+            if (wide_style) then
+                self:AddDoubleLine("Target:", "None", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
+            else
+                self:AddLine("Target: |cFF808080None|r")
+            end
         end
     end
 
@@ -92,15 +102,13 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         local guildName, guildRankName = GetGuildInfo(unit);
         if (guildName and guildRankName) then
             if (TacoTipConfig.show_guild_name) then
-                if (TacoTipConfig.show_guild_rank) then 
+                if (TacoTipConfig.show_guild_rank) then
                     text2 = string.gsub(text2, guildName, string.format("|cFF40FB40%s of <%s>|r", guildRankName, guildName), 1)
                 else
                     text2 = string.gsub(text2, guildName, string.format("|cFF40FB40<%s>|r", guildName), 1)
                 end
             else
-                if (string.find(text2, guildName)) then
-                    text2 = ""
-                end
+                text2 = string.gsub(text2, guildName, "", 1)
             end
         end
 
@@ -252,12 +260,7 @@ PaperDollFrame:HookScript("OnShow", function(self)
 end)
 
 local function RefreshInspectFrame()
-    if (InCombatLockdown()) then
-        InspectGearScore:Hide()
-        InspectGearScoreText:Hide()
-        InspectAvgItemLvl:Hide()
-        InspectAvgItemLvlText:Hide()
-    elseif (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl) then
+    if (not InCombatLockdown() and (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl)) then
         local inspect_gs, inspect_avg = GearScore_GetScore(InspectFrame.unit);
         local r, g, b = GearScore_GetQuality(inspect_gs)
         if (TacoTipConfig.show_gs_character) then
@@ -345,15 +348,25 @@ do
 end
 
 -- TODO: use something better than a timed func
-C_Timer.NewTicker(1, function()
-    if (not inspector or InCombatLockdown() or not UnitExists("player") or not UnitIsConnected("player") or UnitIsDeadOrGhost("player")) then
-        return
-    end
+--C_Timer.NewTicker(1, function()
+--    if (not inspector or InCombatLockdown() or not UnitExists("player") or not UnitIsConnected("player") or UnitIsDeadOrGhost("player")) then
+--        return
+--    end
+--    if (not inspect_init) then
+--        if (InspectModelFrame and InspectPaperDollFrame) then
+--            InitInspectFrame()
+--        end
+--    elseif (InspectFrame and InspectFrame:IsShown()) then
+--       RefreshInspectFrame()
+--    end
+--end)
+
+function TT_CB_TEST_InvReady(guid)
     if (not inspect_init) then
         if (InspectModelFrame and InspectPaperDollFrame) then
             InitInspectFrame()
         end
     elseif (InspectFrame and InspectFrame:IsShown()) then
-       RefreshInspectFrame()
+        RefreshInspectFrame()
     end
-end)
+end
