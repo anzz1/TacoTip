@@ -400,23 +400,24 @@ end
 
 -- fix blizzard CanInspect
 local skip_error = false
-hooksecurefunc("CanInspect", function(unit, showError)
-    if (not showError) then
-        skip_error = true
-    end
-end)
+local oCanInspect = CanInspect
+function CanInspect(unit, showError, ...)
+    skip_error = not showError
+    local ret = oCanInspect(unit, showError, ...)
+    skip_error = false
+    return ret
+end
 
-UIErrorsFrame.oAddMessage = UIErrorsFrame.AddMessage
+local oAddMessage = UIErrorsFrame.AddMessage
 UIErrorsFrame.AddMessage = function(self, ...)
     if (skip_error) then
+        skip_error = false
         local msg = ...
-        if (msg == ERR_UNIT_NOT_FOUND or msg == ERR_INVALID_INSPECT_TARGET) then
-            skip_error = false
-            return
+        if (msg == ERR_UNIT_NOT_FOUND or msg == ERR_INVALID_INSPECT_TARGET or msg == ERR_OUT_OF_RANGE) then
+            return nil
         end
     end
-    skip_error = false
-    self:oAddMessage(...)
+    return oAddMessage(self, ...)
 end
 
 function ICanInspect(unit)
