@@ -1,23 +1,39 @@
 
+local addOnName = ...
+
+local clientVersionString = GetBuildInfo()
+local clientBuildMajor = string.byte(clientVersionString, 1)
+-- load only on classic/tbc/wotlk
+if (clientBuildMajor < 49 or clientBuildMajor > 51 or string.byte(clientVersionString, 2) ~= 46) then
+    return
+end
+
+assert(LibStub, "TacoTip requires LibStub")
+assert(LibStub:GetLibrary("LibClassicInspector", true), "TacoTip requires LibClassicInspector")
+--assert(LibStub:GetLibrary("LibClassicGearScore", true), "TacoTip requires LibClassicGearScore")
+
+local CI = LibStub("LibClassicInspector")
+local GearScore = TT_GS
+
+function TacoTip_GSCallback(guid)
+    local _, ttUnit = GameTooltip:GetUnit()
+    if (ttUnit and UnitGUID(ttUnit) == guid) then
+        GameTooltip:SetUnit(ttUnit)
+    end
+end
+
 GameTooltip:HookScript("OnTooltipSetUnit", function(self)
-    if (not inspector) then return end
     local name, unit = self:GetUnit()
     if (not unit) then 
         return
     end
+    local guid = UnitGUID(unit)
 
     local wide_style = (TacoTipConfig.tip_style == 3 or (TacoTipConfig.tip_style == 2 and IsModifierKeyDown()) and true) or false
 
     if (TacoTipConfig.show_target and UnitIsConnected(unit) and not UnitIsUnit(unit, "player")) then
         local unitTarget = unit .. "target"
         local targetName = UnitName(unitTarget)
-        local inDiffMap = false
-
-        if (IsInGroup() and (IsInRaid() and UnitInRaid(unit) or UnitInParty(unit))) then
-            if (C_Map.GetBestMapForUnit(unit) ~= C_Map.GetBestMapForUnit("player")) then
-                inDiffMap = true
-            end
-        end
 
         if (targetName) then
             if (UnitIsUnit(unitTarget, unit)) then
@@ -66,16 +82,26 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                     self:AddLine("Target: |cFFFFFFFF"..targetName.."|r")
                 end
             end
-        elseif (not inDiffMap) then
-            if (wide_style) then
-                self:AddDoubleLine("Target:", "None", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
-            else
-                self:AddLine("Target: |cFF808080None|r")
+        else
+            local inSameMap = true
+            if (IsInGroup() and ((IsInRaid() and UnitInRaid(unit)) or UnitInParty(unit))) then
+                if (C_Map.GetBestMapForUnit(unit) ~= C_Map.GetBestMapForUnit("player")) then
+                    inSameMap = false
+                end
+            end
+            if (inSameMap) then
+                if (wide_style) then
+                    self:AddDoubleLine("Target:", "None", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
+                else
+                    self:AddLine("Target: |cFF808080None|r")
+                end
             end
         end
     end
 
     if (UnitIsPlayer(unit)) then
+        local localizedClass, class = UnitClass(unit)
+
         local text1 = GameTooltipTextLeft1:GetText()
         if(not text1 or text1 == "") then return; end
         local text2 = GameTooltipTextLeft2:GetText()
@@ -86,7 +112,6 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
             text1 = name
         end
         if (TacoTipConfig.color_class) then
-            local localizedClass, class = UnitClass(unit)
             if (localizedClass and class) then
                 local classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class]
                 if (classc) then
@@ -119,59 +144,56 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         end
 
         if (not TacoTipConfig.hide_in_combat or not InCombatLockdown()) then
-            local guid = UnitGUID(unit)
-
             if (TacoTipConfig.show_talents) then
                 local x1, x2, x3 = 0,0,0
                 local y1, y2, y3 = 0,0,0
-                local spec1 = IGetMostPointsSpecByGUID(guid, 1)
+                local spec1 = CI:GetSpecialization(guid, 1)
                 if (spec1) then
-                    x1, x2, x3 = IGetTotalTalentPointsByGUID(guid, 1)
+                    x1, x2, x3 = CI:GetTalentPoints(guid, 1)
                 end
-                local spec2 = IGetMostPointsSpecByGUID(guid, 2)
+                local spec2 = CI:GetSpecialization(guid, 2)
                 if (spec2) then
-                    y1, y2, y3 = IGetTotalTalentPointsByGUID(guid, 2)
+                    y1, y2, y3 = CI:GetTalentPoints(guid, 2)
                 end
 
-                local active = IGetActiveTalentGroupByGUID(guid)
+                local active = CI:GetActiveTalentGroup(guid)
 
                 if (active == 2) then
                     if (spec2) then
                         if (wide_style) then
-                            self:AddDoubleLine("Talents:", string.format("%s [%d/%d/%d]", spec2, y1, y2, y3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
+                            self:AddDoubleLine("Talents:", string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec2), y1, y2, y3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
                         else
-                            self:AddLine(string.format("Talents:|cFFFFFFFF %s [%d/%d/%d]|r", spec2, y1, y2, y3))
+                            self:AddLine(string.format("Talents:|cFFFFFFFF %s [%d/%d/%d]|r", CI:GetSpecializationName(class, spec2), y1, y2, y3))
                         end
                     end
                     if (spec1) then
                         if (wide_style) then
-                            self:AddDoubleLine((spec2 and " " or "Talents:"), string.format("%s [%d/%d/%d]", spec1, x1, x2, x3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
+                            self:AddDoubleLine((spec2 and " " or "Talents:"), string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec1), x1, x2, x3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
                         elseif (not spec2) then
-                            self:AddLine(string.format("Talents:|cFF808080 %s [%d/%d/%d]|r", spec1, x1, x2, x3))
+                            self:AddLine(string.format("Talents:|cFF808080 %s [%d/%d/%d]|r", CI:GetSpecializationName(class, spec1), x1, x2, x3))
                         end
                     end
-                else
+                elseif (active == 1) then
                     if (spec1) then
                         if (wide_style) then
-                            self:AddDoubleLine("Talents:", string.format("%s [%d/%d/%d]", spec1, x1, x2, x3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
+                            self:AddDoubleLine("Talents:", string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec1), x1, x2, x3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
                         else
-                            self:AddLine(string.format("Talents:|cFFFFFFFF %s [%d/%d/%d]|r", spec1, x1, x2, x3))
+                            self:AddLine(string.format("Talents:|cFFFFFFFF %s [%d/%d/%d]|r", CI:GetSpecializationName(class, spec1), x1, x2, x3))
                         end
                     end
                     if (spec2) then
                         if (wide_style) then
-                            self:AddDoubleLine((spec1 and " " or "Talents:"), string.format("%s [%d/%d/%d]", spec2, y1, y2, y3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
+                            self:AddDoubleLine((spec1 and " " or "Talents:"), string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec2), y1, y2, y3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
                         elseif (not spec1) then
-                            self:AddLine(string.format("Talents:|cFF808080 %s [%d/%d/%d]|r", spec2, y1, y2, y3))
+                            self:AddLine(string.format("Talents:|cFF808080 %s [%d/%d/%d]|r", CI:GetSpecializationName(class, spec2), y1, y2, y3))
                         end
                     end
                 end
             end
-    
             if (TacoTipConfig.show_gs_player) then
-                local gearscore, avg_ilvl = GearScore_GetScore(unit)
+                local gearscore, avg_ilvl = GearScore:GetScore(guid, true)
                 if (gearscore > 0) then
-                    local r, g, b = GearScore_GetQuality(gearscore)
+                    local r, g, b = GearScore:GetQuality(gearscore)
                     if (wide_style) then
                         if (r == b and r == g) then
                             self:AddDoubleLine("|cFFFFFFFFGearScore:|r "..gearscore, "|cFFFFFFFF(iLvl:|r "..avg_ilvl.."|cFFFFFFFF)|r", r, g, b, r, g, b)
@@ -201,7 +223,7 @@ local function itemToolTipHook(self)
             end
         end
         if (TacoTipConfig.show_gs_items) then
-            local gs, _, _, r, g, b = GearScore_GetItemScore(itemLink)
+            local gs, r, g, b = GearScore:GetItemScore(itemLink)
             if (gs and gs > 1) then
                 self:AddLine("GearScore: "..gs, r, g, b)
             end
@@ -237,8 +259,8 @@ PersonalAvgItemLvlText:SetPoint("BOTTOMLEFT",PaperDollFrame,"TOPLEFT",270,-265)
 PersonalAvgItemLvlText:Show()
 
 PaperDollFrame:HookScript("OnShow", function(self)
-    local MyGearScore, MyAverageScore = GearScore_GetScore("player");
-    local r, g, b = GearScore_GetQuality(MyGearScore)
+    local MyGearScore, MyAverageScore = GearScore:GetScore("player");
+    local r, g, b = GearScore:GetQuality(MyGearScore)
     if (TacoTipConfig.show_gs_character) then
         PersonalGearScore:SetText(MyGearScore);
         PersonalGearScore:SetTextColor(r, g, b, 1)
@@ -261,8 +283,8 @@ end)
 
 local function RefreshInspectFrame()
     if (not InCombatLockdown() and (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl)) then
-        local inspect_gs, inspect_avg = GearScore_GetScore(InspectFrame.unit);
-        local r, g, b = GearScore_GetQuality(inspect_gs)
+        local inspect_gs, inspect_avg = GearScore:GetScore(InspectFrame.unit);
+        local r, g, b = GearScore:GetQuality(inspect_gs)
         if (TacoTipConfig.show_gs_character) then
             InspectGearScore:SetText(inspect_gs);
             InspectGearScore:SetTextColor(r, g, b, 1)
@@ -292,33 +314,37 @@ end
 local inspect_init = false
 local function InitInspectFrame()
     inspect_init = true
-    local text1 = InspectModelFrame:CreateFontString("InspectGearScore");
-    text1:SetFont("Fonts\\FRIZQT__.TTF", 10);
-    text1:SetText("0");
-    text1:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",72,-359);
+    local text1 = InspectModelFrame:CreateFontString("InspectGearScore")
+    text1:SetFont("Fonts\\FRIZQT__.TTF", 10)
+    text1:SetText("0")
+    text1:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",72,-359)
 
-    local text2 = InspectModelFrame:CreateFontString("InspectGearScoreText");
-    text2:SetFont("Fonts\\FRIZQT__.TTF", 10);
-    text2:SetText("GearScore");
-    text2:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",72,-372);
+    local text2 = InspectModelFrame:CreateFontString("InspectGearScoreText")
+    text2:SetFont("Fonts\\FRIZQT__.TTF", 10)
+    text2:SetText("GearScore")
+    text2:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",72,-372)
     
-    local text3 = InspectModelFrame:CreateFontString("InspectAvgItemLvl");
-    text3:SetFont("Fonts\\FRIZQT__.TTF", 10);
-    text3:SetText("0");
-    text3:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",270,-359);
+    local text3 = InspectModelFrame:CreateFontString("InspectAvgItemLvl")
+    text3:SetFont("Fonts\\FRIZQT__.TTF", 10)
+    text3:SetText("0")
+    text3:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",270,-359)
 
-    local text4 = InspectModelFrame:CreateFontString("InspectAvgItemLvlText");
-    text4:SetFont("Fonts\\FRIZQT__.TTF", 10);
-    text4:SetText("iLvl");
-    text4:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",270,-372);
+    local text4 = InspectModelFrame:CreateFontString("InspectAvgItemLvlText")
+    text4:SetFont("Fonts\\FRIZQT__.TTF", 10)
+    text4:SetText("iLvl")
+    text4:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",270,-372)
 
-    InspectPaperDollFrame:HookScript("OnShow", RefreshInspectFrame);
+    InspectPaperDollFrame:HookScript("OnShow", RefreshInspectFrame)
+    InspectFrame:HookScript("OnHide", function()
+        InspectGearScore:Hide()
+        InspectAvgItemLvl:Hide()
+    end)
 end
 
 local function onEvent(self, event, ...)
     if (event == "PLAYER_EQUIPMENT_CHANGED") then
-        local MyGearScore, MyAverageScore = GearScore_GetScore("player");
-        local r, g, b = GearScore_GetQuality(MyGearScore)
+        local MyGearScore, MyAverageScore = GearScore:GetScore("player");
+        local r, g, b = GearScore:GetQuality(MyGearScore)
         PersonalGearScore:SetText(MyGearScore);
         PersonalGearScore:SetTextColor(r, g, b, 1)
         PersonalAvgItemLvl:SetText(MyAverageScore);
@@ -328,12 +354,29 @@ local function onEvent(self, event, ...)
         if (unit and UnitIsPlayer(unit)) then
             GameTooltip:SetUnit(unit)
         end
-    else -- UNIT_TARGET
+    elseif (event == "UNIT_TARGET") then
         local unit = ...
         if (unit) then
             local _, ttUnit = GameTooltip:GetUnit()
             if (ttUnit and UnitIsUnit(unit, ttUnit)) then
                 GameTooltip:SetUnit(unit)
+            end
+        end
+    else -- INVENTORY_READY / TALENTS_READY
+        local guid = ...
+        if (guid) then
+            local _, ttUnit = GameTooltip:GetUnit()
+            if (ttUnit and UnitGUID(ttUnit) == guid) then
+                GameTooltip:SetUnit(ttUnit)
+            end
+            if (event == "INVENTORY_READY") then
+                if (not inspect_init) then
+                    if (InspectFrame and InspectModelFrame and InspectPaperDollFrame) then
+                        InitInspectFrame()
+                    end
+                elseif (InspectFrame and InspectFrame:IsShown()) then
+                    RefreshInspectFrame()
+                end
             end
         end
     end
@@ -345,28 +388,6 @@ do
     f:RegisterEvent("MODIFIER_STATE_CHANGED")
     f:RegisterEvent("UNIT_TARGET")
     f:SetScript("OnEvent", onEvent)
-end
-
--- TODO: use something better than a timed func
---C_Timer.NewTicker(1, function()
---    if (not inspector or InCombatLockdown() or not UnitExists("player") or not UnitIsConnected("player") or UnitIsDeadOrGhost("player")) then
---        return
---    end
---    if (not inspect_init) then
---        if (InspectModelFrame and InspectPaperDollFrame) then
---            InitInspectFrame()
---        end
---    elseif (InspectFrame and InspectFrame:IsShown()) then
---       RefreshInspectFrame()
---    end
---end)
-
-function TT_CB_TEST_InvReady(guid)
-    if (not inspect_init) then
-        if (InspectModelFrame and InspectPaperDollFrame) then
-            InitInspectFrame()
-        end
-    elseif (InspectFrame and InspectFrame:IsShown()) then
-        RefreshInspectFrame()
-    end
+    CI.RegisterCallback(addOnName, "INVENTORY_READY", function(...) onEvent(f, ...) end)
+    CI.RegisterCallback(addOnName, "TALENTS_READY", function(...) onEvent(f, ...) end)
 end

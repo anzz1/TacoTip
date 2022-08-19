@@ -1,0 +1,293 @@
+--------------------------------------------------------------------------
+--
+--  LibClassicInspector by kebabstorm
+--  for Classic/TBC/WOTLK
+--
+--  API Version 1 (2022-08-19)
+--
+--------------------------------------------------------------------------
+
+--------------------------------------------------------------------------
+--
+--  LIBRARY CALLBACKS
+--
+--------------------------------------------------------------------------
+
+--------------------------------------------------------------------------
+-- ClassicInspector.RegisterCallback(addOnName, "INVENTORY_READY", inventoryReadyCallback)
+-- ClassicInspector.RegisterCallback(addOnName, "TALENTS_READY", talentsReadyCallback)
+--
+--  Parameters
+--     @string   addOnName         - your addon unique name
+--     @string   event             - event name "INVENTORY_READY" or "TALENTS_READY"
+--     @function callbackFunc      - your callback function     
+--
+--  Returns
+--     @string   event             - event name "INVENTORY_READY" or "TALENTS_READY"
+--     @string   guid              - player guid
+--     @boolean  isInspect         - was the result of inspection
+--     @string   [unit]            - unit token (optional, can return nil if not available)
+--
+local function inventoryReadyCallback(event, guid, isInspect, unit)
+local function talentsReadyCallback(event, guid, isInspect, unit)
+
+--------------------------------------------------------------------------
+--
+--  LIBRARY FUNCTIONS
+--
+--------------------------------------------------------------------------
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetSpecializationName(class, tabIndex)
+--
+--  Parameters
+--     @string class               - english class name in uppercase e.g. "WARRIOR"
+--     @number tabIndex            - talent tab index (1-3)
+--
+--  Returns
+--     @string specName            - specialization name e.g. "Retribution"
+--
+function lib:GetSpecializationName(class, tabIndex)
+    return specName
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetNumTalentsByClass(class, tabIndex)
+--
+--  Parameters
+--     @string class               - english class name in uppercase e.g. "WARRIOR"
+--     @number tabIndex            - talent tab index (1-3)
+--
+--  Returns
+--     @number numTalents          - number of talents in tab
+--
+function lib:GetNumTalentsByClass(class, tabIndex)
+    return numTalents
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetSpecialization(unitorguid[, group])
+--
+--  Parameters
+--     @string unitorguid          - unit token or guid
+--     @number [group]             - talent group or the current active talent group if nil
+--
+--  Returns
+--     @number specIndex           - main specialization index (1-3)
+--     @number pointsSpent         - talent points spent to the main spec
+--
+function lib:GetSpecialization(unitorguid, _group)
+    return specIndex, mostPoints
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetTalentPoints(unitorguid[, group])
+--
+--  Parameters
+--     @string unitorguid          - unit token or guid
+--     @number [group]             - talent group or the current active talent group if nil
+--
+--  Returns
+--     @number pointsSpent1        - talent points spent to tab 1
+--     @number pointsSpent2        - talent points spent to tab 2
+--     @number pointsSpent3        - talent points spent to tab 3
+--
+function lib:GetTalentPoints(unitorguid, _group)
+    return pointsSpent1, pointsSpent2, pointsSpent3
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetActiveTalentGroup(unitorguid)
+--
+--  Parameters
+--     @string unitorguid          - unit token or guid
+--
+--  Returns
+--     @number group               - active talent group (1-2)
+--
+function lib:GetActiveTalentGroup(unitorguid)
+    return group
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetTalentInfo(unitorguid, tabIndex, talentIndex[, group])
+--
+--  Parameters
+--     @string unitorguid          - unit token or guid
+--     @number tabIndex            - talent tab index (1-3)
+--     @number talentIndex         - ranging from 1 to GetNumTalents(tabIndex). counted from left to right, top to bottom.
+--     @number [group]             - talent group or the current active talent group if nil
+--
+--  Returns
+--     @string name                - name of the talent
+--     @number iconTexture         - fileID of icon texture
+--     @number tier                - the row/tier that the talent sits on
+--     @number column              - the column that the talent sits on
+--     @number rank                - the current amount of talent points for a talent
+--     @number maxRank             - the maximum amount of talent points for a talent
+--     @number isExceptional       - 1 if the talent is the ultimate talent, e.g. Lightwell, otherwise returns nil
+--     @number available           - always 1
+--     @number talentID            - talent ID
+--
+function lib:GetTalentInfo(unitorguid, tabIndex, talentIndex, _group)
+    return name, iconTexture, tier, column, rank, maxRank, isExceptional, available, id
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetTalentInfoByClass(class, tabIndex, talentIndex)
+--
+--  Parameters
+--     @string class               - english class name in uppercase e.g. "WARRIOR"
+--     @number tabIndex            - talent tab index (1-3)
+--     @number talentIndex         - ranging from 1 to GetNumTalents(tabIndex). counted from left to right, top to bottom.
+--
+--  Returns
+--     @string name                - name of the talent
+--     @number iconTexture         - fileID of icon texture
+--     @number tier                - the row/tier that the talent sits on
+--     @number column              - the column that the talent sits on
+--     @number rank                - always 0
+--     @number maxRank             - the maximum amount of talent points for a talent
+--     @number isExceptional       - 1 if the talent is the ultimate talent, e.g. Lightwell, otherwise returns nil
+--     @number available           - always 1
+--     @number talentID            - talent ID
+--
+function lib:GetTalentInfoByClass(class, tabIndex, talentIndex)
+    return name, texture, tier, column, 0, maxRank, isExceptional, available, id
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetInventoryItemID(unitorguid, slot)
+--
+--  Parameters
+--     @string unitorguid          - unit token or guid
+--     @number inventorySlot       - inventory slot (1-19)
+--
+--  Returns
+--     @number itemID              - inventory item id
+--
+function lib:GetInventoryItemID(unitorguid, slot)
+    return itemID
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetInventoryItemLink(unitorguid, slot)
+--
+--  Parameters
+--     @string unitorguid          - unit token or guid
+--     @number inventorySlot       - inventory slot (1-19)
+--
+--  Returns
+--     @string itemLink            - inventory item link (can return nil if item is not cached yet)
+--
+function lib:GetInventoryItemLink(unitorguid, slot)
+    return itemLink
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetInventoryItemMixin(unitorguid, slot)
+--
+--  Parameters
+--     @string unitorguid          - unit token or guid
+--     @number inventorySlot       - inventory slot (1-19)
+--
+--  Returns
+--     @ItemMixin item             - inventory item ItemMixin
+--
+function lib:GetInventoryItemMixin(unitorguid, slot)
+    return item
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetInventoryItemIDTable(unitorguid)
+--
+--  Parameters
+--     @string unitorguid          - unit token or guid
+--
+--  Returns
+--     @table  inventoryTable      - inventory item id table (1-19)
+--
+function lib:GetInventoryItemIDTable(unitorguid)
+	return inventoryTable
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetTalentRanksTable(unitorguid)
+--
+--  Parameters
+--     @string unitorguid          - unit token or guid
+--
+--  Returns
+--     @table  talentsTable        - talent ranks table
+--
+function lib:GetTalentRanksTable(unitorguid)
+    return talentsTable
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetLastCacheTime(unitorguid)
+--
+--  Parameters
+--     @string unitorguid          - unit token or guid
+--
+--  Returns
+--     @number talentsCacheTime    - time when talents were last cached or 0 if not found
+--     @number inventoryCacheTime  - time when inventory was last cached or 0 if not found
+--
+function lib:GetLastCacheTime(unitorguid)
+    return talentsCacheTime, inventoryCacheTime
+
+--------------------------------------------------------------------------
+-- ClassicInspector:PlayerGUIDToUnitToken(unit)
+--
+--  Parameters
+--     @string guid                - player guid
+--
+--  Returns
+--     @string unit                - player unit token
+--
+function lib:PlayerGUIDToUnitToken(guid)
+    return unit
+
+--------------------------------------------------------------------------
+-- ClassicInspector:IsClassic()
+--
+--  Returns
+--     @boolean isClassic          - client version is Classic "Vanilla": Means Classic Era and its seasons like SoM (1.x.x)
+--
+function lib:IsClassic()
+    return isClassic
+
+--------------------------------------------------------------------------
+-- ClassicInspector:IsTBC()
+--
+--  Returns
+--     @boolean isTBC              - client version is Classic TBC (2.x.x)
+--
+function lib:IsTBC()
+    return isTBC
+
+--------------------------------------------------------------------------
+-- ClassicInspector:IsWotlk()
+--
+--  Returns
+--     @boolean isWotlk            - client version is Classic Wotlk (3.x.x)
+--
+function lib:IsWotlk()
+    return isWotlk
+
+--------------------------------------------------------------------------
+-- ClassicInspector:CanInspect(unitorguid)
+--
+--  Parameters
+--     @string unitorguid          - unit token or guid of target to check
+--
+--  Returns
+--     @boolean canInspect         - can target unit be inspected
+--
+function lib:CanInspect(unitorguid)
+    return canInspect
+
+--------------------------------------------------------------------------
+-- ClassicInspector:DoInspect(unitorguid)
+--
+--  Parameters
+--     @string unitorguid          - unit token or guid of inspection target
+--
+--  Returns
+--     @number status              - inspection status
+--                                   == 0 : target cannot be inspected
+--                                   == 1 : instant inspection 
+--                                   == 2 : queued inspection
+--
+function lib:DoInspect(unitorguid)
+    return status
+

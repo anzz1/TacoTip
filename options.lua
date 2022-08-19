@@ -2,6 +2,19 @@
 local addOnName = ...
 local addOnVersion = GetAddOnMetadata(addOnName, "Version") or "0.0.1"
 
+local clientVersionString = GetBuildInfo()
+local clientBuildMajor = string.byte(clientVersionString, 1)
+-- load only on classic/tbc/wotlk
+if (clientBuildMajor < 49 or clientBuildMajor > 51 or string.byte(clientVersionString, 2) ~= 46) then
+    return
+end
+
+assert(LibStub, "TacoTip requires LibStub")
+assert(LibStub:GetLibrary("LibClassicInspector", true), "TacoTip requires LibClassicInspector")
+--assert(LibStub:GetLibrary("LibClassicGearScore", true), "TacoTip requires LibClassicGearScore")
+
+local GearScore = TT_GS
+
 local function resetCfg()
     TacoTipConfig = {
         color_class = true,
@@ -129,7 +142,7 @@ frame:SetScript("OnShow", function(frame)
             end
         end
         if (TacoTipConfig.show_gs_player) then
-            local gs_r, gs_b, gs_g = GearScore_GetQuality(6054)
+            local gs_r, gs_b, gs_g = GearScore:GetQuality(6054)
             if (wide_style) then
                 options.exampleTooltip:AddDoubleLine("GearScore: 6054", "(iLvl: 264)", gs_r, gs_g, gs_b, gs_r, gs_g, gs_b)
             else
@@ -262,14 +275,23 @@ frame:SetScript("OnShow", function(frame)
         end)
     options.gearScoreItems:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -32)
     
+    options.uberTips = newCheckbox(
+        "UberTips",
+        "Enhanced Tooltips",
+        "Show enhanced tooltips for spells (\"UberTooltips\")",
+        function(self, value) 
+            SetCVar("UberTooltips", value and "1" or "0")
+        end)
+    options.uberTips:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -60)
+    
     options.hideInCombat = newCheckbox(
         "HideInCombat",
         "Hide In Combat",
-        "Hide gearscore & talents in combat (low-performance mode)",
+        "Hide gearscore & talents in combat",
         function(self, value) 
             TacoTipConfig.hide_in_combat = value
         end)
-    options.hideInCombat:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -60)
+    options.hideInCombat:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -88)
 
 
     local styleText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -323,6 +345,7 @@ frame:SetScript("OnShow", function(frame)
         options.averageItemLevel:SetChecked(TacoTipConfig.show_avg_ilvl)
         options.showItemLevel:SetChecked(TacoTipConfig.show_item_level)
         options.hideInCombat:SetChecked(TacoTipConfig.hide_in_combat)
+        options.uberTips:SetChecked(GetCVar("UberTooltips") == "1")
         options.showTarget:SetChecked(TacoTipConfig.show_target)
         options.styleChoice:SetValue(TacoTipConfig.tip_style)
         options.showGuildRanks:SetDisabled(not TacoTipConfig.show_guild_name)
@@ -332,7 +355,7 @@ frame:SetScript("OnShow", function(frame)
     resetcfg:SetText("Reset configuration")
     resetcfg:SetWidth(177)
     resetcfg:SetHeight(24)
-    resetcfg:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 0, -126)
+    resetcfg:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 0, -160)
     resetcfg:SetScript("OnClick", function()
         resetCfg()
         getConfig()
