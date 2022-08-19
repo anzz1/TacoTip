@@ -16,6 +16,9 @@ assert(LibStub:GetLibrary("LibClassicInspector", true), "TacoTip requires LibCla
 local GearScore = TT_GS
 
 local function resetCfg()
+    if (TacoTipDragButton) then
+        TacoTipDragButton:_Disable()
+    end
     TacoTipConfig = {
         color_class = true,
         show_titles = true,
@@ -30,6 +33,8 @@ local function resetCfg()
         show_item_level = true,
         tip_style = 2,
         show_target = false
+        --custom_pos = nil,
+        --custom_anchor = nil,
     }
     --SetCVar("showItemLevel", "1")
 end
@@ -242,7 +247,7 @@ frame:SetScript("OnShow", function(frame)
             TacoTipConfig.show_gs_character = value
         end)
     options.gearScoreCharacter:SetPoint("TOPLEFT", characterFrameText, "BOTTOMLEFT", -2, -4)
-    
+
     options.averageItemLevel = newCheckbox(
         "AverageItemLevel",
         "Average iLvl",
@@ -251,12 +256,12 @@ frame:SetScript("OnShow", function(frame)
             TacoTipConfig.show_avg_ilvl = value
         end)
     options.averageItemLevel:SetPoint("TOPLEFT", characterFrameText, "BOTTOMLEFT", 140, -4)
-    
+
 
     local extraText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     extraText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -218)
     extraText:SetText("Extra")
-    
+
     options.showItemLevel = newCheckbox(
         "ShowItemLevel",
         "Show Item Level",
@@ -265,7 +270,7 @@ frame:SetScript("OnShow", function(frame)
             TacoTipConfig.show_item_level = value
         end)
     options.showItemLevel:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -4)  
-    
+
     options.gearScoreItems = newCheckbox(
         "GearScoreItems",
         "Show Item GearScore",
@@ -274,7 +279,7 @@ frame:SetScript("OnShow", function(frame)
             TacoTipConfig.show_gs_items = value
         end)
     options.gearScoreItems:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -32)
-    
+
     options.uberTips = newCheckbox(
         "UberTips",
         "Enhanced Tooltips",
@@ -283,7 +288,7 @@ frame:SetScript("OnShow", function(frame)
             SetCVar("UberTooltips", value and "1" or "0")
         end)
     options.uberTips:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -60)
-    
+
     options.hideInCombat = newCheckbox(
         "HideInCombat",
         "Hide In Combat",
@@ -292,6 +297,34 @@ frame:SetScript("OnShow", function(frame)
             TacoTipConfig.hide_in_combat = value
         end)
     options.hideInCombat:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -88)
+
+    options.customPosition = newCheckbox(
+        "CustomPosition",
+        "Custom Tooltip Position",
+        "Set a custom position for game tooltips",
+        function(self, value)
+            if (value) then
+                options.moverBtn:SetEnabled(true)
+                TacoTip_CustomPosEnable(false)
+            else
+                options.moverBtn:SetEnabled(false)
+                if (TacoTipDragButton) then
+                    TacoTipDragButton:_Disable()
+                end
+                TacoTipConfig.custom_pos = nil
+                TacoTipConfig.custom_anchor = nil
+            end
+        end)
+    options.customPosition:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -116)
+
+    options.moverBtn = CreateFrame("Button", "TacoTipOptButtonMover", frame, "UIPanelButtonTemplate")
+    options.moverBtn:SetText("Mover")
+    options.moverBtn:SetWidth(80)
+    options.moverBtn:SetHeight(20)
+    options.moverBtn:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -117)
+    options.moverBtn:SetScript("OnClick", function()
+        TacoTip_CustomPosEnable(true)
+    end)
 
 
     local styleText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -312,7 +345,7 @@ frame:SetScript("OnShow", function(frame)
         end)
     options.styleChoice:SetPoint("TOPLEFT", styleText, "BOTTOMLEFT", -20, -4)
     options.styleChoice:SetValue(TacoTipConfig.tip_style)
-    
+
     local althint1 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint1:SetPoint("TOPLEFT", styleText, "BOTTOMLEFT", -90, -48)
     althint1:SetText("COMPACT")
@@ -331,8 +364,8 @@ frame:SetScript("OnShow", function(frame)
     local althint6 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint6:SetPoint("TOPLEFT", althint5, "BOTTOMLEFT", 0, 0)
     althint6:SetText("Show dual spec, GearScore, average iLvl")
-    
-    
+
+
     local function getConfig()
         options.useClassColors:SetChecked(TacoTipConfig.color_class)
         options.showTitles:SetChecked(TacoTipConfig.show_titles)
@@ -349,19 +382,21 @@ frame:SetScript("OnShow", function(frame)
         options.showTarget:SetChecked(TacoTipConfig.show_target)
         options.styleChoice:SetValue(TacoTipConfig.tip_style)
         options.showGuildRanks:SetDisabled(not TacoTipConfig.show_guild_name)
+        options.customPosition:SetChecked(TacoTipConfig.custom_pos and true or false)
+        options.moverBtn:SetEnabled(TacoTipConfig.custom_pos and true or false)
     end
-    
+
     local resetcfg = CreateFrame("Button", "TacoTipOptButtonResetCfg", frame, "UIPanelButtonTemplate")
     resetcfg:SetText("Reset configuration")
     resetcfg:SetWidth(177)
     resetcfg:SetHeight(24)
-    resetcfg:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 0, -160)
+    resetcfg:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 0, -188)
     resetcfg:SetScript("OnClick", function()
         resetCfg()
         getConfig()
         showExampleTooltip()
     end)
-    
+
     getConfig()
     options.exampleTooltip:RegisterEvent("MODIFIER_STATE_CHANGED")
     showExampleTooltip()
@@ -378,10 +413,25 @@ end)
 
 SLASH_TACOTIP1 = "/tacotip";
 SLASH_TACOTIP2 = "/tooltip";
-SLASH_TACOTIP3 = "/tt";
-SLASH_TACOTIP4 = "/gs";
-SLASH_TACOTIP5 = "/gearscore";
+SLASH_TACOTIP3 = "/tip";
+SLASH_TACOTIP4 = "/tt";
+SLASH_TACOTIP5 = "/gs";
+SLASH_TACOTIP6 = "/gearscore";
 SlashCmdList["TACOTIP"] = function(msg)
-    InterfaceOptionsFrame_OpenToCategory(addOnName)
-    InterfaceOptionsFrame_OpenToCategory(addOnName)
+    local cmd = strlower(msg)
+    if (cmd == "custom") then
+        TacoTip_CustomPosEnable(true)
+    elseif (cmd == "default") then
+        if (not TacoTipConfig.custom_pos) then
+            print("|cff59f0dcTacoTip:|r Custom tooltip position is disabled.")
+        end
+        if (TacoTipDragButton) then
+            TacoTipDragButton:_Disable()
+        end
+        TacoTipConfig.custom_pos = nil
+        TacoTipConfig.custom_anchor = nil
+    else
+        InterfaceOptionsFrame_OpenToCategory(addOnName)
+        InterfaceOptionsFrame_OpenToCategory(addOnName)
+    end
 end

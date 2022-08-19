@@ -10,9 +10,13 @@ end
 
 assert(LibStub, "TacoTip requires LibStub")
 assert(LibStub:GetLibrary("LibClassicInspector", true), "TacoTip requires LibClassicInspector")
+assert(LibStub:GetLibrary("LibDetours-1.0", true), "LibClassicInspector requires LibDetours-1.0")
 --assert(LibStub:GetLibrary("LibClassicGearScore", true), "TacoTip requires LibClassicGearScore")
 
+_G[addOnName] = {}
+
 local CI = LibStub("LibClassicInspector")
+local Detours = LibStub("LibDetours-1.0")
 local GearScore = TT_GS
 
 function TacoTip_GSCallback(guid)
@@ -362,6 +366,14 @@ local function onEvent(self, event, ...)
                 GameTooltip:SetUnit(unit)
             end
         end
+    elseif (event == "ADDON_LOADED") then
+        local addon = ...
+        if (addon == addOnName) then
+            self:UnregisterEvent("ADDON_LOADED")
+            if (TacoTipConfig.custom_pos) then
+                TacoTip_CustomPosEnable(false)
+            end
+        end
     else -- INVENTORY_READY / TALENTS_READY
         local guid = ...
         if (guid) then
@@ -387,7 +399,117 @@ do
     f:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
     f:RegisterEvent("MODIFIER_STATE_CHANGED")
     f:RegisterEvent("UNIT_TARGET")
+    f:RegisterEvent("ADDON_LOADED")
     f:SetScript("OnEvent", onEvent)
     CI.RegisterCallback(addOnName, "INVENTORY_READY", function(...) onEvent(f, ...) end)
     CI.RegisterCallback(addOnName, "TALENTS_READY", function(...) onEvent(f, ...) end)
+end
+
+function TacoTip_CustomPosEnable(show)
+    if (not TacoTipDragButton) then
+        TacoTipDragButton = CreateFrame("Button", nil, UIParent)
+        TacoTipDragButton:SetFrameStrata("TOOLTIP")
+        TacoTipDragButton:SetFrameLevel(999)
+        TacoTipDragButton:EnableMouse(true)
+        TacoTipDragButton:SetMovable(true)
+        TacoTipDragButton:SetUserPlaced(false)
+        TacoTipDragButton:SetClampedToScreen(true)
+        TacoTipDragButton:SetSize(32,32)
+        TacoTipDragButton:SetNormalTexture("Interface\\MINIMAP\\TempleofKotmogu_ball_green")
+        local pos = TacoTipConfig.custom_pos or {"TOPLEFT","TOPLEFT",0,0}
+        TacoTipDragButton:SetPoint(pos[1],UIParent,pos[2],pos[3],pos[4])
+        TacoTipDragButton:RegisterForDrag("LeftButton")
+        TacoTipDragButton:RegisterForClicks("MiddleButtonUp", "RightButtonUp")
+        TacoTipDragButton:SetScript("OnDragStart", TacoTipDragButton.StartMoving)
+        TacoTipDragButton:SetScript("OnDragStop", function(self)
+            self:StopMovingOrSizing()
+            local from, _, to, x, y = self:GetPoint()
+            TacoTipConfig.custom_pos = {from, to, x, y}
+        end)
+        TacoTipDragButton:SetScript("OnClick", function(self, button, down)
+            if (button == "MiddleButton") then
+                if (TacoTipConfig.custom_anchor == "TOPRIGHT") then
+                    TacoTipConfig.custom_anchor = "BOTTOMRIGHT"
+                elseif (TacoTipConfig.custom_anchor == "BOTTOMRIGHT") then
+                    TacoTipConfig.custom_anchor = "BOTTOMLEFT"
+                elseif (TacoTipConfig.custom_anchor == "BOTTOMLEFT") then
+                    TacoTipConfig.custom_anchor = "CENTER"
+                elseif (TacoTipConfig.custom_anchor == "CENTER") then
+                    TacoTipConfig.custom_anchor = "TOPLEFT"
+                else
+                    TacoTipConfig.custom_anchor = "TOPRIGHT"
+                end
+                TacoTipDragButton:ShowExample()
+            elseif (button == "RightButton") then
+            	StaticPopupDialogs["_TacoTipDragButtonConfirm_"] = {["whileDead"]=1,["hideOnEscape"]=1,["timeout"]=0,["exclusive"]=1,["enterClicksFirstButton"]=1,["text"]="\nDo you want to save custom tooltip position or reset back to default?\n\n",
+            	["button1"]=SAVE,["button2"]=CANCEL,["button3"]=RESET,["OnAccept"]=function() TacoTipDragButton:_Save() end,["OnAlt"]=function() TacoTipDragButton:_Disable() end}
+    			StaticPopup_Show("_TacoTipDragButtonConfirm_")
+            end
+        end)
+        TacoTipDragButton:SetScript("OnShow", function(self)
+            if (self.ticker) then
+                self.ticker:Cancel()
+            end
+            self.ticker = C_Timer.NewTicker(1, function()
+                TacoTipDragButton:ShowExample()
+            end)
+            Detours:ScriptHook(_G[addOnName], GameTooltip, "OnShow", function(self)
+                if (TacoTipDragButton:IsShown()) then
+                    local name, unit = self:GetUnit()
+                    if (not unit or not UnitIsUnit(unit, "player")) then
+                        TacoTipDragButton:ShowExample()
+                    end
+                end
+            end)
+            TacoTipDragButton:ShowExample()
+            print("|cff59f0dcTacoTip:|r Mover is shown. Drag the yellow dot to move the tooltip.\nMiddle-Click to change anchor. Right-Click to save.")
+        end)
+        TacoTipDragButton:SetScript("OnHide", function(self)
+            if (self.ticker) then
+                self.ticker:Cancel()
+            end
+            Detours:ScriptUnhook(_G[addOnName], GameTooltip, "OnShow")
+        end)
+        function TacoTipDragButton:ShowExample()
+            GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
+            GameTooltip:SetUnit("player")
+            GameTooltip:AddDoubleLine("Left-Click", "Drag to Move", 1, 1, 1)
+            GameTooltip:AddDoubleLine("Middle-Click", "Change Anchor", 1, 1, 1)
+            GameTooltip:AddDoubleLine("Right-Click", "Save Position", 1, 1, 1)
+            GameTooltip:Show()
+        end
+        function TacoTipDragButton:_Enable()
+            Detours:SecureHook(_G[addOnName], "GameTooltip_SetDefaultAnchor", function(self) 
+                self:SetOwner(TacoTipDragButton,"ANCHOR_NONE")
+                self:ClearAllPoints(true)
+                self:SetPoint(TacoTipConfig.custom_anchor or "TOPLEFT", TacoTipDragButton, "CENTER")
+            end)
+            if (not TacoTipConfig.custom_pos) then
+                local from, _, to, x, y = TacoTipDragButton:GetPoint()
+                TacoTipConfig.custom_pos = {from, to, x, y}
+                print("|cff59f0dcTacoTip:|r Custom tooltip position enabled.")
+            end
+        end
+        function TacoTipDragButton:_Save()
+            TacoTipDragButton:Hide()
+            print("|cff59f0dcTacoTip:|r Custom tooltip position saved. Mover hidden.")
+        end
+        function TacoTipDragButton:_Disable()
+            TacoTipDragButton:Hide()
+            Detours:SecureUnhook(_G[addOnName], "GameTooltip_SetDefaultAnchor")
+            GameTooltip:Hide()
+            if (TacoTipConfig.custom_pos) then
+                print("|cff59f0dcTacoTip:|r Custom tooltip position disabled. Tooltip position back to default.")
+            end
+            TacoTipConfig.custom_pos = nil
+            TacoTipConfig.custom_anchor = nil
+        end
+        TacoTipDragButton:Hide()
+    end
+    TacoTipDragButton:_Enable()
+    if (show) then
+        TacoTipDragButton:Show()
+    else
+        TacoTipDragButton:Hide()
+    end
 end
