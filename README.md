@@ -26,5 +26,13 @@ Addon has been developed with efficiency and speed as a priority - no FPS hit, s
 
 Any input / feedback is welcome !
 
+**Options Menu**  
+Access from Interface->Addons->TacoTip or chat command /tacotip
+![TacoTip](https://user-images.githubusercontent.com/13628128/185593093-0e0662d6-0915-4f8f-aa33-151b38eb5c7c.png)
 
-![TacoTip](https://user-images.githubusercontent.com/13628128/183254553-714deeaa-95d2-4e23-8197-e8820d312fe2.png)
+
+---
+
+***For addon developers***  
+[LibClassicInspector](https://github.com/anzz1/TacoTip/tree/master/Libs/LibClassicInspector) is now publicly released.
+Check out the API [here](https://github.com/anzz1/TacoTip/blob/master/Libs/LibClassicInspector/API.txt)
