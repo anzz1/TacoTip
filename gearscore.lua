@@ -16,8 +16,8 @@ if (clientBuildMajor < 49 or clientBuildMajor > 51 or string.byte(clientVersionS
     return
 end
 
-assert(LibStub, "LibClassicGearScore requires LibStub")
-assert(LibStub:GetLibrary("LibClassicInspector", true), "LibClassicGearScore requires LibClassicInspector")
+assert(LibStub, "TacoTip requires LibStub")
+assert(LibStub:GetLibrary("LibClassicInspector", true), "TacoTip requires LibClassicInspector")
 
 local CI = LibStub("LibClassicInspector")
 

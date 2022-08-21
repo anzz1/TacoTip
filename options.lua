@@ -13,6 +13,8 @@ assert(LibStub, "TacoTip requires LibStub")
 assert(LibStub:GetLibrary("LibClassicInspector", true), "TacoTip requires LibClassicInspector")
 --assert(LibStub:GetLibrary("LibClassicGearScore", true), "TacoTip requires LibClassicGearScore")
 
+local isPawnLoaded = PawnClassicLastUpdatedVersion and PawnClassicLastUpdatedVersion >= 2.0538
+
 local GearScore = TT_GS
 
 local function resetCfg()
@@ -32,7 +34,8 @@ local function resetCfg()
         hide_in_combat = false,
         show_item_level = true,
         tip_style = 2,
-        show_target = false
+        show_target = false,
+        show_pawn_player = false
         --custom_pos = nil,
         --custom_anchor = nil,
     }
@@ -217,12 +220,22 @@ frame:SetScript("OnShow", function(frame)
     options.gearScorePlayer = newCheckbox(
         "GearScorePlayer",
         "GearScore",
-        "Show players GearScore in tooltips",
+        "Show player's GearScore in tooltips",
         function(self, value) 
             TacoTipConfig.show_gs_player = value
             showExampleTooltip()
         end)
     options.gearScorePlayer:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", 140, -60)
+    
+    options.pawnScorePlayer = newCheckbox(
+        "PawnScorePlayer",
+        "PawnScore",
+        "Show player's PawnScore in tooltips (may affect performance)",
+        function(self, value) 
+            TacoTipConfig.show_pawn_player = value
+            showExampleTooltip()
+        end)
+    options.pawnScorePlayer:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", 140, -88)
 
     options.showTarget = newCheckbox(
         "ShowTarget",
@@ -384,6 +397,9 @@ frame:SetScript("OnShow", function(frame)
         options.showGuildRanks:SetDisabled(not TacoTipConfig.show_guild_name)
         options.customPosition:SetChecked(TacoTipConfig.custom_pos and true or false)
         options.moverBtn:SetEnabled(TacoTipConfig.custom_pos and true or false)
+        options.pawnScorePlayer:SetDisabled(not isPawnLoaded)
+        options.pawnScorePlayer:SetChecked(TacoTipConfig.show_pawn_player)
+        options.pawnScorePlayer.label:SetText(isPawnLoaded and "PawnScore" or "PawnScore (requires Pawn)")
     end
 
     local resetcfg = CreateFrame("Button", "TacoTipOptButtonResetCfg", frame, "UIPanelButtonTemplate")

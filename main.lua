@@ -19,6 +19,8 @@ local CI = LibStub("LibClassicInspector")
 local Detours = LibStub("LibDetours-1.0")
 local GearScore = TT_GS
 
+local isPawnLoaded = PawnClassicLastUpdatedVersion and PawnClassicLastUpdatedVersion >= 2.0538
+
 function TacoTip_GSCallback(guid)
     local _, ttUnit = GameTooltip:GetUnit()
     if (ttUnit and UnitGUID(ttUnit) == guid) then
@@ -210,6 +212,16 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                         else
                             self:AddLine("GearScore: "..gearscore, r, g, b)
                         end
+                    end
+                end
+            end
+            if (isPawnLoaded and TacoTipConfig.show_pawn_player) then
+                local pawnScore, specName, specColor = TT_PAWN:GetScore(guid, not TacoTipConfig.show_gs_player)
+                if (pawnScore > 0) then
+                    if (wide_style) then
+                        self:AddDoubleLine(string.format("Pawn: %s%.2f|r", specColor, pawnScore), string.format("%s(%s)|r", specColor, specName), 1, 1, 1, 1, 1, 1)
+                    else
+                        self:AddLine(string.format("Pawn: %s%.2f (%s)|r", specColor, pawnScore, specName), 1, 1, 1)
                     end
                 end
             end
