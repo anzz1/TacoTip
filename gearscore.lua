@@ -211,7 +211,7 @@ local function itemcacheCB(tbl, id)
 end
 
 
-function TT_GS:GetScore(unitorguid, callbackFunc)
+function TT_GS:GetScore(unitorguid, useCallback)
     local guid = getPlayerGUID(unitorguid)
     if (guid) then
         if (guid ~= UnitGUID("player")) then
@@ -235,7 +235,7 @@ function TT_GS:GetScore(unitorguid, callbackFunc)
         
         local cb_table
         
-        if (callbackFunc) then
+        if (useCallback) then
             cb_table = {["guid"] = guid, ["items"] = {}}
         end
 
@@ -244,14 +244,16 @@ function TT_GS:GetScore(unitorguid, callbackFunc)
                 mainHandLink = mainHandItem:GetItemLink()
             else
                 IsReady = false
-                if (callbackFunc) then
-                    local id = mainHandItem:GetItemID()
-                    table.insert(cb_table.items, id)
-                    mainHandItem:ContinueOnItemLoad(function()
-                        itemcacheCB(cb_table, id)
-                    end)
-                else
-                    C_Item.RequestLoadItemDataByID(mainHandItem:GetItemID())
+                local itemID = mainHandItem:GetItemID()
+                if (itemID) then
+                    if (useCallback) then
+                        table.insert(cb_table.items, itemID)
+                        mainHandItem:ContinueOnItemLoad(function()
+                            itemcacheCB(cb_table, itemID)
+                        end)
+                    else
+                        C_Item.RequestLoadItemDataByID(itemID)
+                    end
                 end
             end
         end
@@ -260,14 +262,16 @@ function TT_GS:GetScore(unitorguid, callbackFunc)
                 offHandLink = offHandItem:GetItemLink()
             else
                 IsReady = false
-                if (callbackFunc) then
-                    local id = offHandItem:GetItemID()
-                    table.insert(cb_table.items, id)
-                    offHandItem:ContinueOnItemLoad(function()
-                        itemcacheCB(cb_table, id)
-                    end)
-                else
-                    C_Item.RequestLoadItemDataByID(offHandItem:GetItemID())
+                local itemID = offHandItem:GetItemID()
+                if (itemID) then
+                    if (useCallback) then
+                        table.insert(cb_table.items, itemID)
+                        offHandItem:ContinueOnItemLoad(function()
+                            itemcacheCB(cb_table, itemID)
+                        end)
+                    else
+                        C_Item.RequestLoadItemDataByID(itemID)
+                    end
                 end
             end
         end
@@ -314,14 +318,16 @@ function TT_GS:GetScore(unitorguid, callbackFunc)
                         LevelTotal = LevelTotal + ItemLevel
                     else
                         IsReady = false
-                        if (callbackFunc) then
-                            local id = item:GetItemID()
-                            table.insert(cb_table.items, id)
-                            item:ContinueOnItemLoad(function()
-                                itemcacheCB(cb_table, id)
-                            end)
-                        else
-                            C_Item.RequestLoadItemDataByID(item:GetItemID())
+                        local itemID = item:GetItemID()
+                        if (itemID) then
+                            if (useCallback) then
+                                table.insert(cb_table.items, itemID)
+                                item:ContinueOnItemLoad(function()
+                                    itemcacheCB(cb_table, itemID)
+                                end)
+                            else
+                                C_Item.RequestLoadItemDataByID(itemID)
+                            end
                         end
                     end
                 end
