@@ -10,7 +10,7 @@ end
 
 assert(LibStub, "TacoTip requires LibStub")
 assert(LibStub:GetLibrary("LibClassicInspector", true), "TacoTip requires LibClassicInspector")
-assert(LibStub:GetLibrary("LibDetours-1.0", true), "LibClassicInspector requires LibDetours-1.0")
+assert(LibStub:GetLibrary("LibDetours-1.0", true), "TacoTip requires LibDetours-1.0")
 --assert(LibStub:GetLibrary("LibClassicGearScore", true), "TacoTip requires LibClassicGearScore")
 
 _G[addOnName] = {}
@@ -20,6 +20,12 @@ local Detours = LibStub("LibDetours-1.0")
 local GearScore = TT_GS
 
 local isPawnLoaded = PawnClassicLastUpdatedVersion and PawnClassicLastUpdatedVersion >= 2.0538
+
+local HORDE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-HORDE:16:16:-2:0:64:64:0:38:0:38|t"
+local ALLIANCE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-ALLIANCE:16:16:-2:0:64:64:0:38:0:38|t"
+local PVP_FLAG_ICON = "|TInterface\\GossipFrame\\BattleMasterGossipIcon:0|t"
+
+local POWERBAR_UPDATE_RATE = 0.2
 
 function TacoTip_GSCallback(guid)
     local _, ttUnit = GameTooltip:GetUnit()
@@ -35,7 +41,8 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     end
     local guid = UnitGUID(unit)
 
-    local wide_style = (TacoTipConfig.tip_style == 3 or (TacoTipConfig.tip_style == 2 and IsModifierKeyDown()) and true) or false
+    local wide_style = (TacoTipConfig.tip_style == 1 or ((TacoTipConfig.tip_style == 2 or TacoTipConfig.tip_style == 4) and IsModifierKeyDown()))
+    local mini_style = (not wide_style and (TacoTipConfig.tip_style == 4 or TacoTipConfig.tip_style == 5))
 
     if (TacoTipConfig.show_target and UnitIsConnected(unit) and not UnitIsUnit(unit, "player")) then
         local unitTarget = unit .. "target"
@@ -105,14 +112,16 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         end
     end
 
+    local text1 = GameTooltipTextLeft1:GetText()
+    if (not text1 or text1 == "") then return end
+    local text2 = GameTooltipTextLeft2:GetText()
+    if (not text2 or text2 == "") then return end
+    local text3 = GameTooltipTextLeft3:GetText()
+    local text4 = GameTooltipTextLeft4:GetText()
+    local text5 = GameTooltipTextLeft5:GetText()
+
     if (UnitIsPlayer(unit)) then
         local localizedClass, class = UnitClass(unit)
-
-        local text1 = GameTooltipTextLeft1:GetText()
-        if(not text1 or text1 == "") then return; end
-        local text2 = GameTooltipTextLeft2:GetText()
-        if(not text2 or text2 == "") then return; end
-        local text3 = GameTooltipTextLeft3:GetText()
 
         if (not TacoTipConfig.show_titles and string.find(text1, name)) then
             text1 = name
@@ -134,7 +143,11 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         if (guildName and guildRankName) then
             if (TacoTipConfig.show_guild_name) then
                 if (TacoTipConfig.show_guild_rank) then
-                    text2 = string.gsub(text2, guildName, string.format("|cFF40FB40%s of <%s>|r", guildRankName, guildName), 1)
+                    if (TacoTipConfig.guild_rank_alt_style) then
+                        text2 = string.gsub(text2, guildName, string.format("|cFF40FB40<%s> (%s)|r", guildName, guildRankName), 1)
+                    else
+                        text2 = string.gsub(text2, guildName, string.format("|cFF40FB40%s of <%s>|r", guildRankName, guildName), 1)
+                    end
                 else
                     text2 = string.gsub(text2, guildName, string.format("|cFF40FB40<%s>|r", guildName), 1)
                 end
@@ -142,11 +155,8 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                 text2 = string.gsub(text2, guildName, "", 1)
             end
         end
-
-        GameTooltipTextLeft1:SetText(text1)
-        GameTooltipTextLeft2:SetText(text2)
-        if (text3) then
-            GameTooltipTextLeft3:SetText(text3)
+        if (TacoTipConfig.show_team) then
+            text1 = text1.." "..(UnitFactionGroup(unit) == "Horde" and HORDE_ICON or ALLIANCE_ICON)
         end
 
         if (not TacoTipConfig.hide_in_combat or not InCombatLockdown()) then
@@ -196,6 +206,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                     end
                 end
             end
+            local miniText = ""
             if (TacoTipConfig.show_gs_player) then
                 local gearscore, avg_ilvl = GearScore:GetScore(guid, true)
                 if (gearscore > 0) then
@@ -205,6 +216,12 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                             self:AddDoubleLine("|cFFFFFFFFGearScore:|r "..gearscore, "|cFFFFFFFF(iLvl:|r "..avg_ilvl.."|cFFFFFFFF)|r", r, g, b, r, g, b)
                         else
                             self:AddDoubleLine("GearScore: "..gearscore, "(iLvl: "..avg_ilvl..")", r, g, b, r, g, b)
+                        end
+                    elseif (mini_style) then
+                        if (r == b and r == g) then
+                            miniText = string.format("GS: |cFF%02x%02x%02x%s|r  L: |cFF%02x%02x%02x%s|r  ", r*255, g*255, b*255, gearscore, r*255, g*255, b*255, avg_ilvl)
+                        else
+                            miniText = string.format("|cFF%02x%02x%02xGS: %s  L: %s|r  ", r*255, g*255, b*255, gearscore, avg_ilvl)
                         end
                     else
                         if (r == b and r == g) then
@@ -220,12 +237,98 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                 if (pawnScore > 0) then
                     if (wide_style) then
                         self:AddDoubleLine(string.format("Pawn: %s%.2f|r", specColor, pawnScore), string.format("%s(%s)|r", specColor, specName), 1, 1, 1, 1, 1, 1)
+                    elseif (mini_style) then
+                        miniText = miniText .. string.format("P: %s%.1f|r", specColor, pawnScore)
                     else
                         self:AddLine(string.format("Pawn: %s%.2f (%s)|r", specColor, pawnScore, specName), 1, 1, 1)
                     end
                 end
             end
+            if (miniText ~= "") then
+                self:AddLine(miniText, 1, 1, 1)
+            end
         end
+    end
+
+    if (TacoTipConfig.show_pvp_icon and UnitIsPVP(unit)) then
+        text1 = text1.." "..PVP_FLAG_ICON
+        if (text3) then
+            text3 = string.gsub(text3, "PvP", "", 1)
+        end
+        if (text4) then
+            text4 = string.gsub(text4, "PvP", "", 1)
+        end
+        if (text5) then
+            text5 = string.gsub(text5, "PvP", "", 1)
+        end
+    end
+
+    GameTooltipTextLeft1:SetText(text1)
+    GameTooltipTextLeft2:SetText(text2)
+    if (text3) then
+        GameTooltipTextLeft3:SetText(text3)
+    end
+    if (text4) then
+        GameTooltipTextLeft4:SetText(text4)
+    end
+    if (text5) then
+        GameTooltipTextLeft5:SetText(text5)
+    end
+
+    if (not TacoTipConfig.show_hp_bar and GameTooltipStatusBar and GameTooltipStatusBar:IsShown()) then
+        GameTooltipStatusBar:Hide()
+    end
+
+    if (TacoTipConfig.show_power_bar) then
+        if (not TacoTipPowerBar) then
+            TacoTipPowerBar = CreateFrame("StatusBar", "TacoTipPowerBar", GameTooltip)
+            TacoTipPowerBar:SetSize(0, 8)
+            TacoTipPowerBar:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 2, -9)
+            TacoTipPowerBar:SetPoint("TOPRIGHT", GameTooltip, "BOTTOMRIGHT", -2, -9)
+            TacoTipPowerBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-TargetingFrame-BarFill")
+            TacoTipPowerBar:SetStatusBarColor(0, 0, 1)
+            function TacoTipPowerBar:Update(u)
+                if (TacoTipConfig.show_power_bar) then
+                    local unit = u or select(2, GameTooltip:GetUnit())
+                    if (unit) then
+                        local _, power = UnitPowerType(unit)
+                        local color = power and PowerBarColor[power] or {}
+                        self:SetStatusBarColor(color.r or 0, color.g or 0, color.b or 1);
+                        self:SetMinMaxValues(0, UnitPowerMax(unit))
+                        self:SetValue(UnitPower(unit))
+                    end
+                end
+            end
+            TacoTipPowerBar:SetScript("OnEvent", function(self, event, unit)
+                local _, ttUnit = GameTooltip:GetUnit()
+                if (unit and ttUnit and UnitIsUnit(unit, ttUnit)) then
+                    self:Update(unit)
+                end
+            end)
+            TacoTipPowerBar:RegisterEvent("UNIT_POWER_UPDATE")
+            TacoTipPowerBar:RegisterEvent("UNIT_MAXPOWER")
+            TacoTipPowerBar:RegisterEvent("UNIT_DISPLAYPOWER")
+            TacoTipPowerBar:RegisterEvent("UNIT_POWER_BAR_SHOW")
+            TacoTipPowerBar:RegisterEvent("UNIT_POWER_BAR_HIDE")
+            TacoTipPowerBar.updateTicker = C_Timer.NewTicker(POWERBAR_UPDATE_RATE, function()
+                TacoTipPowerBar:Update()
+            end)
+        end
+        if (UnitPowerMax(unit) > 0) then
+            if (TacoTipConfig.show_hp_bar) then
+                TacoTipPowerBar:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 2, -9)
+                TacoTipPowerBar:SetPoint("TOPRIGHT", GameTooltip, "BOTTOMRIGHT", -2, -9)
+            else
+                TacoTipPowerBar:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 2, -1)
+                TacoTipPowerBar:SetPoint("TOPRIGHT", GameTooltip, "BOTTOMRIGHT", -2, -1)
+            end
+            TacoTipPowerBar:Update()
+            TacoTipPowerBar:Show()
+        else
+            TacoTipPowerBar:Hide()
+        end
+    elseif (TacoTipPowerBar) then
+        TacoTipPowerBar:Hide()
     end
 end)
 
@@ -251,6 +354,22 @@ GameTooltip:HookScript("OnTooltipSetItem", itemToolTipHook)
 ShoppingTooltip1:HookScript("OnTooltipSetItem", itemToolTipHook)
 ShoppingTooltip2:HookScript("OnTooltipSetItem", itemToolTipHook)
 ItemRefTooltip:HookScript("OnTooltipSetItem", itemToolTipHook)
+
+hooksecurefunc("GameTooltip_SetDefaultAnchor", function(self)
+    if (TacoTipConfig.custom_pos) then
+        self:SetOwner(TacoTipDragButton,"ANCHOR_NONE")
+        self:ClearAllPoints(true)
+        self:SetPoint(TacoTipConfig.custom_anchor or "TOPLEFT", TacoTipDragButton, "CENTER")
+    elseif (TacoTipConfig.show_hp_bar and TacoTipConfig.show_power_bar) then
+        self:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -CONTAINER_OFFSET_X-13, CONTAINER_OFFSET_Y+9)
+    end
+end)
+
+GameTooltipStatusBar:HookScript("OnHide", function(self)
+    if (TacoTipPowerBar) then
+        TacoTipPowerBar:Hide()
+    end
+end)
 
 PaperDollFrame:CreateFontString("PersonalGearScore")
 PersonalGearScore:SetFont("Fonts\\FRIZQT__.TTF", 10)
@@ -339,7 +458,7 @@ local function InitInspectFrame()
     text2:SetFont("Fonts\\FRIZQT__.TTF", 10)
     text2:SetText("GearScore")
     text2:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",72,-372)
-    
+
     local text3 = InspectModelFrame:CreateFontString("InspectAvgItemLvl")
     text3:SetFont("Fonts\\FRIZQT__.TTF", 10)
     text3:SetText("0")
@@ -385,6 +504,20 @@ local function onEvent(self, event, ...)
             if (TacoTipConfig.custom_pos) then
                 TacoTip_CustomPosEnable(false)
             end
+            if (TacoTipConfig.instant_fade) then
+                self:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
+                Detours:DetourHook(_G[addOnName], GameTooltip, "FadeOut", function(self)
+                    self:Hide()
+                end)
+            end
+        end
+    elseif (event == "UPDATE_MOUSEOVER_UNIT") then
+        if (GameTooltip:GetUnit()) then
+            C_Timer.NewTimer(0, function()
+                if (not UnitExists("mouseover")) then
+                    GameTooltip:Hide()
+                end
+            end)
         end
     else -- INVENTORY_READY / TALENTS_READY
         local guid = ...
@@ -408,13 +541,14 @@ end
 
 do
     local f = CreateFrame("Frame")
+    f:SetScript("OnEvent", onEvent)
     f:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
     f:RegisterEvent("MODIFIER_STATE_CHANGED")
     f:RegisterEvent("UNIT_TARGET")
     f:RegisterEvent("ADDON_LOADED")
-    f:SetScript("OnEvent", onEvent)
     CI.RegisterCallback(addOnName, "INVENTORY_READY", function(...) onEvent(f, ...) end)
     CI.RegisterCallback(addOnName, "TALENTS_READY", function(...) onEvent(f, ...) end)
+    _G[addOnName].frame = f
 end
 
 function TacoTip_CustomPosEnable(show)
@@ -453,9 +587,9 @@ function TacoTip_CustomPosEnable(show)
                 end
                 TacoTipDragButton:ShowExample()
             elseif (button == "RightButton") then
-            	StaticPopupDialogs["_TacoTipDragButtonConfirm_"] = {["whileDead"]=1,["hideOnEscape"]=1,["timeout"]=0,["exclusive"]=1,["enterClicksFirstButton"]=1,["text"]="\nDo you want to save custom tooltip position or reset back to default?\n\n",
-            	["button1"]=SAVE,["button2"]=CANCEL,["button3"]=RESET,["OnAccept"]=function() TacoTipDragButton:_Save() end,["OnAlt"]=function() TacoTipDragButton:_Disable() end}
-    			StaticPopup_Show("_TacoTipDragButtonConfirm_")
+                StaticPopupDialogs["_TacoTipDragButtonConfirm_"] = {["whileDead"]=1,["hideOnEscape"]=1,["timeout"]=0,["exclusive"]=1,["enterClicksFirstButton"]=1,["text"]="\nDo you want to save custom tooltip position or reset back to default?\n\n",
+                ["button1"]=SAVE,["button2"]=CANCEL,["button3"]=RESET,["OnAccept"]=function() TacoTipDragButton:_Save() end,["OnAlt"]=function() TacoTipDragButton:_Disable() end}
+                StaticPopup_Show("_TacoTipDragButtonConfirm_")
             end
         end)
         TacoTipDragButton:SetScript("OnShow", function(self)
@@ -474,7 +608,7 @@ function TacoTip_CustomPosEnable(show)
                 end
             end)
             TacoTipDragButton:ShowExample()
-            print("|cff59f0dcTacoTip:|r Mover is shown. Drag the yellow dot to move the tooltip.\nMiddle-Click to change anchor. Right-Click to save.")
+            print("|cff59f0dcTacoTip:|r Mover is shown. Drag the yellow dot to move the tooltip. Middle-Click to change anchor. Right-Click to save.")
         end)
         TacoTipDragButton:SetScript("OnHide", function(self)
             if (self.ticker) then
@@ -491,27 +625,34 @@ function TacoTip_CustomPosEnable(show)
             GameTooltip:Show()
         end
         function TacoTipDragButton:_Enable()
-            Detours:SecureHook(_G[addOnName], "GameTooltip_SetDefaultAnchor", function(self) 
-                self:SetOwner(TacoTipDragButton,"ANCHOR_NONE")
-                self:ClearAllPoints(true)
-                self:SetPoint(TacoTipConfig.custom_anchor or "TOPLEFT", TacoTipDragButton, "CENTER")
-            end)
             if (not TacoTipConfig.custom_pos) then
                 local from, _, to, x, y = TacoTipDragButton:GetPoint()
                 TacoTipConfig.custom_pos = {from, to, x, y}
                 print("|cff59f0dcTacoTip:|r Custom tooltip position enabled.")
             end
+            if (TacoTipOptCheckBoxCustomPosition) then
+                TacoTipOptCheckBoxCustomPosition:SetChecked(true)
+            end
+            if (TacoTipOptButtonMover) then
+                TacoTipOptButtonMover:SetEnabled(true)
+            end
         end
         function TacoTipDragButton:_Save()
             TacoTipDragButton:Hide()
-            print("|cff59f0dcTacoTip:|r Custom tooltip position saved. Mover hidden.")
+            print("|cff59f0dcTacoTip:|r Custom tooltip position saved. Mover hidden. Type '/tacotip custom' to show mover again.")
         end
         function TacoTipDragButton:_Disable()
             TacoTipDragButton:Hide()
-            Detours:SecureUnhook(_G[addOnName], "GameTooltip_SetDefaultAnchor")
             GameTooltip:Hide()
+            GameTooltip:ClearAllPoints()
             if (TacoTipConfig.custom_pos) then
                 print("|cff59f0dcTacoTip:|r Custom tooltip position disabled. Tooltip position back to default.")
+            end
+            if (TacoTipOptCheckBoxCustomPosition) then
+                TacoTipOptCheckBoxCustomPosition:SetChecked(false)
+            end
+            if (TacoTipOptButtonMover) then
+                TacoTipOptButtonMover:SetEnabled(false)
             end
             TacoTipConfig.custom_pos = nil
             TacoTipConfig.custom_anchor = nil
