@@ -27,6 +27,10 @@ local function resetCfg()
     if (TacoTipDragButton) then
         TacoTipDragButton:_Disable()
     end
+    if (TacoTipConfig and TacoTipConfig.instant_fade) then
+        _G[addOnName].frame:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
+        Detours:DetourUnhook(_G[addOnName], GameTooltip, "FadeOut")
+    end
     TacoTipConfig = {
         color_class = true,
         show_titles = true,
@@ -647,6 +651,13 @@ SlashCmdList["TACOTIP"] = function(msg)
         end
         TacoTipConfig.custom_pos = nil
         TacoTipConfig.custom_anchor = nil
+    elseif (cmd == "reset") then
+        resetCfg()
+        if (frame:IsShown()) then
+            getConfig()
+            showExampleTooltip()
+        end
+        print("|cff59f0dcTacoTip:|r Configuration has been reset to default.")
     else
         InterfaceOptionsFrame_OpenToCategory(addOnName)
         InterfaceOptionsFrame_OpenToCategory(addOnName)

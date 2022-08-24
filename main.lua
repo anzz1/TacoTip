@@ -39,6 +39,14 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     if (not unit) then 
         return
     end
+
+    if (TacoTipDragButton and TacoTipDragButton:IsShown()) then
+        if (not UnitIsUnit(unit, "player")) then
+            TacoTipDragButton:ShowExample()
+            return
+        end
+    end
+
     local guid = UnitGUID(unit)
 
     local wide_style = (TacoTipConfig.tip_style == 1 or ((TacoTipConfig.tip_style == 2 or TacoTipConfig.tip_style == 4) and IsModifierKeyDown()))
@@ -607,6 +615,11 @@ function TacoTip_CustomPosEnable(show)
                     end
                 end
             end)
+            Detours:ScriptHook(_G[addOnName], GameTooltip, "OnHide", function(self)
+                if (TacoTipDragButton:IsShown()) then
+                    TacoTipDragButton:ShowExample()
+                end
+            end)
             TacoTipDragButton:ShowExample()
             print("|cff59f0dcTacoTip:|r Mover is shown. Drag the yellow dot to move the tooltip. Middle-Click to change anchor. Right-Click to save.")
         end)
@@ -615,6 +628,7 @@ function TacoTip_CustomPosEnable(show)
                 self.ticker:Cancel()
             end
             Detours:ScriptUnhook(_G[addOnName], GameTooltip, "OnShow")
+            Detours:ScriptUnhook(_G[addOnName], GameTooltip, "OnHide")
         end)
         function TacoTipDragButton:ShowExample()
             GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
