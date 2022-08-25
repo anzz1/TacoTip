@@ -658,6 +658,29 @@ SlashCmdList["TACOTIP"] = function(msg)
             showExampleTooltip()
         end
         print("|cff59f0dcTacoTip:|r Configuration has been reset to default.")
+    elseif (cmd == "save") then
+        if (TacoTipDragButton and TacoTipDragButton:IsShown()) then
+            TacoTipDragButton:_Save()
+        end
+    elseif (strfind(cmd, "anchor")) then
+        if (strfind(cmd, "topleft")) then
+            TacoTipConfig.custom_anchor = "TOPLEFT"
+            print("|cff59f0dcTacoTip:|r Custom position anchor set: 'TOPLEFT'")
+        elseif (strfind(cmd, "topright")) then
+            TacoTipConfig.custom_anchor = "TOPRIGHT"
+            print("|cff59f0dcTacoTip:|r Custom position anchor set: 'TOPRIGHT'")
+        elseif (strfind(cmd, "bottomleft")) then
+            TacoTipConfig.custom_anchor = "BOTTOMLEFT"
+            print("|cff59f0dcTacoTip:|r Custom position anchor set: 'BOTTOMLEFT'")
+        elseif (strfind(cmd, "bottomright")) then
+            TacoTipConfig.custom_anchor = "BOTTOMRIGHT"
+            print("|cff59f0dcTacoTip:|r Custom position anchor set: 'BOTTOMRIGHT'")
+        elseif (strfind(cmd, "center")) then
+            TacoTipConfig.custom_anchor = "CENTER"
+            print("|cff59f0dcTacoTip:|r Custom position anchor set: 'CENTER'")
+        else
+            print("|cff59f0dcTacoTip:|r Usage: /tacotip anchor ANCHOR. Valid ANCHOR values are TOPLEFT/TOPRIGHT/BOTTOMLEFT/BOTTOMRIGHT/CENTER.")
+        end
     else
         InterfaceOptionsFrame_OpenToCategory(addOnName)
         InterfaceOptionsFrame_OpenToCategory(addOnName)
