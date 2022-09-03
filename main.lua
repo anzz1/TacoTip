@@ -396,13 +396,13 @@ ShoppingTooltip1:HookScript("OnTooltipSetItem", itemToolTipHook)
 ShoppingTooltip2:HookScript("OnTooltipSetItem", itemToolTipHook)
 ItemRefTooltip:HookScript("OnTooltipSetItem", itemToolTipHook)
 
-hooksecurefunc("GameTooltip_SetDefaultAnchor", function(self)
+hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
     if (TacoTipConfig.custom_pos) then
-        self:SetOwner(TacoTipDragButton,"ANCHOR_NONE")
-        self:ClearAllPoints(true)
-        self:SetPoint(TacoTipConfig.custom_anchor or "TOPLEFT", TacoTipDragButton, "CENTER")
+        tooltip:SetOwner(TacoTipDragButton,"ANCHOR_NONE")
+        tooltip:ClearAllPoints(true)
+        tooltip:SetPoint(TacoTipConfig.custom_anchor or "TOPLEFT", TacoTipDragButton, "CENTER")
     elseif (TacoTipConfig.show_hp_bar and TacoTipConfig.show_power_bar) then
-        self:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -CONTAINER_OFFSET_X-13, CONTAINER_OFFSET_Y+9)
+        tooltip:SetPoint("BOTTOMRIGHT", "UIParent", "BOTTOMRIGHT", -CONTAINER_OFFSET_X-13, CONTAINER_OFFSET_Y+9)
     end
 end)
 

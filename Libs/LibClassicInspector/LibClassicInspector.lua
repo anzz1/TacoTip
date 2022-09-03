@@ -4,7 +4,7 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 1 (2022-08-19)
+    Version: 2 (2022-09-03)
 
 --]]
 
@@ -19,7 +19,7 @@ assert(LibStub, "LibClassicInspector requires LibStub")
 assert(LibStub:GetLibrary("CallbackHandler-1.0", true), "LibClassicInspector requires CallbackHandler-1.0")
 assert(LibStub:GetLibrary("LibDetours-1.0", true), "LibClassicInspector requires LibDetours-1.0")
 
-local lib, oldminor = LibStub:NewLibrary("LibClassicInspector", 1)
+local lib, oldminor = LibStub:NewLibrary("LibClassicInspector", 2)
 
 -- already loaded
 if (not lib) then
@@ -2443,8 +2443,11 @@ local function sendInfo()
                 end
             end
         end
-        if (IsInGroup()) then
+        if (IsInGroup(LE_PARTY_CATEGORY_HOME)) then
             SendAddonMessage(C_PREFIX, s, "RAID")
+        end
+        if (IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) then
+            SendAddonMessage(C_PREFIX, s, "INSTANCE_CHAT")
         end
         if (IsInGuild()) then
             SendAddonMessage(C_PREFIX, s, "GUILD")

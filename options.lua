@@ -261,7 +261,7 @@ frame:SetScript("OnShow", function(frame)
 
     local generalText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     generalText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -18)
-    generalText:SetText("Tooltips")
+    generalText:SetText("Unit Tooltips")
 
     options.useClassColors = newCheckbox(
         "ClassColors",
@@ -488,33 +488,14 @@ frame:SetScript("OnShow", function(frame)
         end)
     options.hideInCombat:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -88)
 
-    options.customPosition = newCheckbox(
-        "CustomPosition",
-        "Custom Tooltip Position",
-        "Set a custom position for game tooltips",
-        function(self, value)
-            if (value) then
-                options.moverBtn:SetEnabled(true)
-                TacoTip_CustomPosEnable(false)
-            else
-                options.moverBtn:SetEnabled(false)
-                if (TacoTipDragButton) then
-                    TacoTipDragButton:_Disable()
-                end
-                TacoTipConfig.custom_pos = nil
-                TacoTipConfig.custom_anchor = nil
-            end
+    options.chatClassColors = newCheckbox(
+        "ChatClassColors",
+        "Chat Class Colors",
+        "Color names by class in chat windows",
+        function(self, value) 
+            SetCVar("chatClassColorOverride", value and "0" or "1")
         end)
-    options.customPosition:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -116)
-
-    options.moverBtn = CreateFrame("Button", "TacoTipOptButtonMover", frame, "UIPanelButtonTemplate")
-    options.moverBtn:SetText("Mover")
-    options.moverBtn:SetWidth(80)
-    options.moverBtn:SetHeight(20)
-    options.moverBtn:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -117)
-    options.moverBtn:SetScript("OnClick", function()
-        TacoTip_CustomPosEnable(true)
-    end)
+    options.chatClassColors:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -116) 
 
     options.instantFade = newCheckbox(
         "InstantFade",
@@ -533,6 +514,34 @@ frame:SetScript("OnShow", function(frame)
             end
         end)
     options.instantFade:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -144)
+    
+    options.customPosition = newCheckbox(
+        "CustomPosition",
+        "Custom Tooltip Position",
+        "Set a custom position for game tooltips",
+        function(self, value)
+            if (value) then
+                options.moverBtn:SetEnabled(true)
+                TacoTip_CustomPosEnable(false)
+            else
+                options.moverBtn:SetEnabled(false)
+                if (TacoTipDragButton) then
+                    TacoTipDragButton:_Disable()
+                end
+                TacoTipConfig.custom_pos = nil
+                TacoTipConfig.custom_anchor = nil
+            end
+        end)
+    options.customPosition:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -4)
+
+    options.moverBtn = CreateFrame("Button", "TacoTipOptButtonMover", frame, "UIPanelButtonTemplate")
+    options.moverBtn:SetText("Mover")
+    options.moverBtn:SetWidth(80)
+    options.moverBtn:SetHeight(20)
+    options.moverBtn:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 374, -5)
+    options.moverBtn:SetScript("OnClick", function()
+        TacoTip_CustomPosEnable(true)
+    end)
 
     local styleText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     styleText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 341, -154)
@@ -605,6 +614,7 @@ frame:SetScript("OnShow", function(frame)
         options.showHealthBar:SetChecked(TacoTipConfig.show_hp_bar)
         options.showPowerBar:SetChecked(TacoTipConfig.show_power_bar)
         options.instantFade:SetChecked(TacoTipConfig.instant_fade)
+        options.chatClassColors:SetChecked(GetCVar("chatClassColorOverride") == "0")
     end
 
     local resetcfg = CreateFrame("Button", "TacoTipOptButtonResetCfg", frame, "UIPanelButtonTemplate")
