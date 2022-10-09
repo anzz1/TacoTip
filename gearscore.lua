@@ -166,6 +166,17 @@ function TT_GS:GetQuality(ItemScore)
     return 0.1, 0.1, 0.1, "Trash"
 end
 
+local function enchantPenalty(ItemLink, ItemEquipLoc)
+	local _, _, ItemSubString = string.find(ItemLink, "^|c%x+|H(.+)|h%[.*%]");
+	local ItemSubStringTable = {strsplit(":", ItemSubString or "")}
+	local penalty = 0
+
+	if GS_ItemTypes[ItemEquipLoc]["Enchantable"] and ItemSubStringTable[3] and (ItemSubStringTable[3] == "") then
+		penalty = penalty + 1
+	end
+
+	return 1 - ((floor(2 * (GS_ItemTypes[ItemEquipLoc]["SlotMOD"]) * 100 * penalty) / 100)/100)	
+end	
 
 function TT_GS:GetItemScore(ItemLink)
     if not (ItemLink) then
@@ -205,6 +216,7 @@ function TT_GS:GetItemScore(ItemLink)
                 GearScore = 0
                 Red, Green, Blue = TT_GS:GetQuality(1)
             end
+            GearScore = floor(GearScore * enchantPenalty(ItemLink, ItemEquipLoc))
             return GearScore, ItemLevel, Red, Green, Blue
         end
     end
