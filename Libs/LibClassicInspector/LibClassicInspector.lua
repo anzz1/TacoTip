@@ -2524,7 +2524,7 @@ oAddMessage = Detours:DetourHook(lib, UIErrorsFrame, "AddMessage", function(self
         local msg = ...
         if (msg == ERR_UNIT_NOT_FOUND or msg == ERR_INVALID_INSPECT_TARGET or msg == ERR_OUT_OF_RANGE) then
             if GetCVar("Sound_EnableErrorSpeech") == "1" then
-				skip_error = true
+                skip_error = true
             end
             return nil
         end
@@ -2534,11 +2534,11 @@ end)
 
 local oPlayVocalErrorSoundID
 oPlayVocalErrorSoundID = Detours:DetourHook(lib, "PlayVocalErrorSoundID", function(vocalErrorSoundID, ...)
-	if vocalErrorSoundID == 10 and skip_error == true then
-		skip_error = false
-		return nil
-	end
-	return oPlayVocalErrorSoundID(vocalErrorSoundID, ...)
+    if vocalErrorSoundID == 10 and skip_error == true then
+        skip_error = false
+        return nil
+    end
+    return oPlayVocalErrorSoundID(vocalErrorSoundID, ...)
 end)
 
 
