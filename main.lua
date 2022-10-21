@@ -383,7 +383,7 @@ local function itemToolTipHook(self)
             end
         end
         if (TacoTipConfig.show_gs_items) then
-            local gs, r, g, b = GearScore:GetItemScore(itemLink)
+            local gs, _, r, g, b = GearScore:GetItemScore(itemLink)
             if (gs and gs > 1) then
                 self:AddLine("GearScore: "..gs, r, g, b)
             end
