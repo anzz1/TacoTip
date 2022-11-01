@@ -19,6 +19,7 @@ Addon has been developed with efficiency and speed as a priority - no FPS hit, s
 - Item GearScore
 - Item Level
 
+
 #### Character Frame
 - GearScore
 - Average Item Level
@@ -36,3 +37,10 @@ Access from Interface->Addons->TacoTip or chat command /tacotip
 ***For addon developers***  
 [LibClassicInspector](https://github.com/anzz1/TacoTip/tree/master/Libs/LibClassicInspector) is now publicly released.
 Check out the API [here](https://github.com/anzz1/TacoTip/blob/master/Libs/LibClassicInspector/API.txt)
+
+---
+
+***If you get "Addon out of date" error***  
+Press ESC for Menu -> Addons -> Check: [X] Load out of date AddOns  
+
+![out-of-date-addon-menu-small](https://user-images.githubusercontent.com/13628128/199223990-17896046-3407-472d-be70-b78fc42ae905.jpg)
