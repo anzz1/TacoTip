@@ -205,12 +205,21 @@ function TT_GS:GetItemScore(ItemLink)
                 GearScore = 0
                 Red, Green, Blue = TT_GS:GetQuality(1)
             end
-            return GearScore, ItemLevel, Red, Green, Blue
+            return GearScore, ItemLevel, Red, Green, Blue, ItemEquipLoc
         end
     end
-    return 0, 0, 0.1, 0.1, 0.1
+    return 0, 0, 0.1, 0.1, 0.1, 0
 end
 
+function TT_GS:GetItemHunterScore(ItemLink)
+    local GearScore, ItemLevel, Red, Green, Blue, ItemEquipLoc = TT_GS:GetItemScore(ItemLink)
+    if ((ItemEquipLoc == "INVTYPE_2HWEAPON") or (ItemEquipLoc == "INVTYPE_WEAPONMAINHAND") or (ItemEquipLoc == "INVTYPE_WEAPONOFFHAND") or (ItemEquipLoc == "INVTYPE_WEAPON") or (ItemEquipLoc == "INVTYPE_HOLDABLE")) then
+        GearScore = floor(GearScore * 0.3164)
+    elseif ((ItemEquipLoc == "INVTYPE_RANGEDRIGHT") or (ItemEquipLoc == "INVTYPE_RANGED")) then
+        GearScore = floor(GearScore * 5.3224)
+    end
+    return GearScore, ItemLevel, Red, Green, Blue, ItemEquipLoc
+end
 
 local function itemcacheCB(tbl, id)
     for i=1,#tbl.items do

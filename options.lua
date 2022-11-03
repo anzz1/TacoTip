@@ -14,10 +14,16 @@ assert(LibStub:GetLibrary("LibClassicInspector", true), "TacoTip requires LibCla
 assert(LibStub:GetLibrary("LibDetours-1.0", true), "TacoTip requires LibDetours-1.0")
 --assert(LibStub:GetLibrary("LibClassicGearScore", true), "TacoTip requires LibClassicGearScore")
 
+_G[addOnName] = {}
+
 local isPawnLoaded = PawnClassicLastUpdatedVersion and PawnClassicLastUpdatedVersion >= 2.0538
 
 local Detours = LibStub("LibDetours-1.0")
+local CI = LibStub("LibClassicInspector")
+
 local GearScore = TT_GS
+local L = TACOTIP_LOCALE
+local TT = _G[addOnName]
 
 local HORDE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-HORDE:16:16:-2:0:64:64:0:38:0:38|t"
 local ALLIANCE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-ALLIANCE:16:16:-2:0:64:64:0:38:0:38|t"
@@ -28,8 +34,8 @@ local function resetCfg()
         TacoTipDragButton:_Disable()
     end
     if (TacoTipConfig and TacoTipConfig.instant_fade) then
-        _G[addOnName].frame:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
-        Detours:DetourUnhook(_G[addOnName], GameTooltip, "FadeOut")
+        TT.frame:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
+        Detours:DetourUnhook(TT, GameTooltip, "FadeOut")
     end
     TacoTipConfig = {
         color_class = true,
@@ -40,6 +46,7 @@ local function resetCfg()
         show_gs_player = true,
         show_gs_character = true,
         show_gs_items = false,
+        show_gs_items_hs = false,
         show_avg_ilvl = true,
         hide_in_combat = false,
         show_item_level = true,
@@ -51,10 +58,52 @@ local function resetCfg()
         guild_rank_alt_style = false,
         show_hp_bar = true,
         show_power_bar = false,
-        instant_fade = false
+        instant_fade = false,
+        anchor_mouse = false,
+        anchor_mouse_world = true,
+        anchor_mouse_spells = false,
+        inspect_gs_offset_x = 0,
+        inspect_gs_offset_y = 0,
+        inspect_ilvl_offset_x = 0,
+        inspect_ilvl_offset_y = 0,
+        character_gs_offset_x = 0,
+        character_gs_offset_y = 0,
+        character_ilvl_offset_x = 0,
+        character_ilvl_offset_y = 0,
+        unlock_info_position = false
         --custom_pos = nil,
         --custom_anchor = nil,
     }
+    if (PersonalGearScore) then
+        PersonalGearScore:RefreshPosition()
+    end
+    if (PersonalGearScoreText) then
+        PersonalGearScoreText:RefreshPosition()
+    end
+    if (PersonalAvgItemLvl) then
+        PersonalAvgItemLvl:RefreshPosition()
+    end
+    if (PersonalAvgItemLvlText) then
+        PersonalAvgItemLvlText:RefreshPosition()
+    end
+    if (InspectGearScore) then
+        InspectGearScore:RefreshPosition()
+    end
+    if (InspectGearScoreText) then
+        InspectGearScoreText:RefreshPosition()
+    end
+    if (InspectAvgItemLvl) then
+        InspectAvgItemLvl:RefreshPosition()
+    end
+    if (InspectAvgItemLvlText) then
+        InspectAvgItemLvlText:RefreshPosition()
+    end
+    if (TT.RefreshCharacterFrame and PaperDollFrame and PaperDollFrame:IsShown()) then
+        TT:RefreshCharacterFrame()
+    end
+    if (TT.RefreshInspectFrame and InspectFrame and InspectFrame:IsShown()) then
+        TT:RefreshInspectFrame()
+    end
     --SetCVar("showItemLevel", "1")
 end
 
@@ -76,7 +125,7 @@ frame:SetScript("OnShow", function(frame)
 
     local description = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     description:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
-    description:SetText("Better player tooltips - class colors, talents/specialization,\n                     gearscore, guild ranks")
+    description:SetText(L["TEXT_OPT_DESC"])
 
     local function newCheckbox(name, label, description, onClick)
         local check = CreateFrame("CheckButton", "TacoTipOptCheckBox" .. name, frame, "InterfaceOptionsCheckButtonTemplate")
@@ -175,23 +224,23 @@ frame:SetScript("OnShow", function(frame)
         local name_r = TacoTipConfig.color_class and classc and classc.r or 0
         local name_g = TacoTipConfig.color_class and classc and classc.g or 0.6
         local name_b = TacoTipConfig.color_class and classc and classc.b or 0.1
-        local title = TacoTipConfig.show_titles and " the Kingslayer" or ""
+        local title = TacoTipConfig.show_titles and L[" the Kingslayer"] or ""
         options.exampleTooltip:AddLine(string.format("|cFF%02x%02x%02xKebabstorm%s %s%s|r", name_r*255, name_g*255, name_b*255, title, (TacoTipConfig.show_team and (HORDE_ICON.." ") or ""), (TacoTipConfig.show_pvp_icon and PVP_FLAG_ICON or "")))
         if (TacoTipConfig.show_guild_name) then
             if (TacoTipConfig.show_guild_rank) then
                 if (TacoTipConfig.guild_rank_alt_style) then
                     options.exampleTooltip:AddLine("|cFF40FB40<Drunken Wrath> (Officer)|r")
                 else
-                    options.exampleTooltip:AddLine("|cFF40FB40Officer of <Drunken Wrath>|r")
+                    options.exampleTooltip:AddLine(string.format("|cFF40FB40"..L["FORMAT_GUILD_RANK_1"].."|r", "Officer", "Drunken Wrath"))
                 end
             else
                 options.exampleTooltip:AddLine("|cFF40FB40<Drunken Wrath>|r")
             end
         end
         if (TacoTipConfig.color_class) then
-            options.exampleTooltip:AddLine(string.format("Level 80 Undead |cFF%02x%02x%02xRogue|r (Player)", name_r*255, name_g*255, name_b*255), 1, 1, 1)
+            options.exampleTooltip:AddLine(string.format("%s 80 %s |cFF%02x%02x%02x%s|r (%s)", L["Level"], L["Undead"], name_r*255, name_g*255, name_b*255, LOCALIZED_CLASS_NAMES_MALE["ROGUE"], L["Player"]), 1, 1, 1)
         else
-            options.exampleTooltip:AddLine("Level 80 Undead Rogue (Player)", 1, 1, 1)
+            options.exampleTooltip:AddLine(string.format("%s 80 %s %s (%s)", L["Level"], L["Undead"], LOCALIZED_CLASS_NAMES_MALE["ROGUE"], L["Player"]), 1, 1, 1)
         end
 
         if (not TacoTipConfig.show_pvp_icon) then
@@ -203,17 +252,17 @@ frame:SetScript("OnShow", function(frame)
 
         if (TacoTipConfig.show_target) then
             if (wide_style) then
-                options.exampleTooltip:AddDoubleLine("Target:", "None", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
+                options.exampleTooltip:AddDoubleLine(L["Target"]..":", L["None"], NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
             else
-                options.exampleTooltip:AddLine("Target: |cFF808080None|r")
+                options.exampleTooltip:AddLine(L["Target"]..": |cFF808080"..L["None"].."|r")
             end
         end
         if (TacoTipConfig.show_talents) then
             if (wide_style) then
-                options.exampleTooltip:AddDoubleLine("Talents:", "Assassination [51/18/2]", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
-                options.exampleTooltip:AddDoubleLine(" ", "Subtlety [14/3/54]", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
+                options.exampleTooltip:AddDoubleLine(L["Talents"]..":", CI:GetSpecializationName("ROGUE", 1, true).." [51/18/2]", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
+                options.exampleTooltip:AddDoubleLine(" ", CI:GetSpecializationName("ROGUE", 3, true).." [14/3/54]", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
             else
-                options.exampleTooltip:AddLine("Talents:|cFFFFFFFF Assassination [51/18/2]")
+                options.exampleTooltip:AddLine(L["Talents"]..":|cFFFFFFFF "..CI:GetSpecializationName("ROGUE", 1, true).." [51/18/2]")
             end
         end
         local miniText = ""
@@ -230,11 +279,11 @@ frame:SetScript("OnShow", function(frame)
         if (isPawnLoaded and TacoTipConfig.show_pawn_player) then
             local specColor = PawnGetScaleColor("\"Classic\":ROGUE1", true) or "|cffffffff"
             if (wide_style) then
-                options.exampleTooltip:AddDoubleLine(string.format("Pawn: %s1234.56|r", specColor), string.format("%s(Assassination)|r", specColor), 1, 1, 1, 1, 1, 1)
+                options.exampleTooltip:AddDoubleLine(string.format("Pawn: %s1234.56|r", specColor), string.format("%s(%s)|r", specColor, CI:GetSpecializationName("ROGUE", 1, true)), 1, 1, 1, 1, 1, 1)
             elseif (mini_style) then
                 miniText = miniText .. string.format("P: %s1234.5|r", specColor)
             else
-                options.exampleTooltip:AddLine(string.format("Pawn: %s1234.56 (Assassination)|r", specColor), 1, 1, 1)
+                options.exampleTooltip:AddLine(string.format("Pawn: %s1234.56 (%s)|r", specColor, CI:GetSpecializationName("ROGUE", 1, true)), 1, 1, 1)
             end
         end
         if (miniText ~= "") then
@@ -261,12 +310,12 @@ frame:SetScript("OnShow", function(frame)
 
     local generalText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     generalText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -18)
-    generalText:SetText("Unit Tooltips")
+    generalText:SetText(L["Unit Tooltips"])
 
     options.useClassColors = newCheckbox(
         "ClassColors",
-        "Class Color",
-        "Color class names in tooltips",
+        L["Class Color"],
+        L["Color class names in tooltips"],
         function(self, value) 
             TacoTipConfig.color_class = value
             showExampleTooltip()
@@ -275,8 +324,8 @@ frame:SetScript("OnShow", function(frame)
 
     options.showTitles = newCheckbox(
         "ShowTitles",
-        "Title",
-        "Show player's title in tooltips",
+        L["Title"],
+        L["Show player's title in tooltips"],
         function(self, value) 
             TacoTipConfig.show_titles = value
             showExampleTooltip()
@@ -285,8 +334,8 @@ frame:SetScript("OnShow", function(frame)
 
     options.showGuildNames = newCheckbox(
         "GuildNames",
-        "Guild Name",
-        "Show guild name in tooltips",
+        L["Guild Name"],
+        L["Show guild name in tooltips"],
         function(self, value) 
             TacoTipConfig.show_guild_name = value
             options.showGuildRanks:SetDisabled(not value)
@@ -303,8 +352,8 @@ frame:SetScript("OnShow", function(frame)
 
     options.showGuildRanks = newCheckbox(
         "GuildRanks",
-        "Guild Rank",
-        "Show guild rank in tooltips",
+        L["Guild Rank"],
+        L["Show guild rank in tooltips"],
         function(self, value) 
             TacoTipConfig.show_guild_rank = value
             options.guildRankStyle1:SetDisabled(not value)
@@ -316,8 +365,8 @@ frame:SetScript("OnShow", function(frame)
 
     options.guildRankStyle1 = newRadioButton(
         "GuildRankStyle1",
-        "Style 1",
-        "Rank of <Guild>",
+        L["Style"].." 1",
+        string.format(L["FORMAT_GUILD_RANK_1"], L["Rank"], L["Guild"]),
         function(self, value)
             options.guildRankStyle2:SetChecked(false)
             TacoTipConfig.guild_rank_alt_style = false
@@ -329,8 +378,8 @@ frame:SetScript("OnShow", function(frame)
 
     options.guildRankStyle2 = newRadioButton(
         "GuildRankStyle2",
-        "Style 2",
-        "<Guild> (Rank)",
+        L["Style"].." 2",
+        string.format("<%s> (%s)", L["Guild"], L["Rank"]),
         function(self, value)
             options.guildRankStyle1:SetChecked(false)
             TacoTipConfig.guild_rank_alt_style = true
@@ -342,12 +391,12 @@ frame:SetScript("OnShow", function(frame)
 
     local rankstylehint = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     rankstylehint:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", 264, -23)
-    rankstylehint:SetText("Style")
+    rankstylehint:SetText(L["Style"])
 
     options.showTalents = newCheckbox(
         "Talents",
-        "Talents",
-        "Show talents and specialization in tooltips",
+        L["Talents"],
+        L["Show talents and specialization in tooltips"],
         function(self, value) 
             TacoTipConfig.show_talents = value
             showExampleTooltip()
@@ -357,7 +406,7 @@ frame:SetScript("OnShow", function(frame)
     options.gearScorePlayer = newCheckbox(
         "GearScorePlayer",
         "GearScore",
-        "Show player's GearScore in tooltips",
+        L["Show player's GearScore in tooltips"],
         function(self, value) 
             TacoTipConfig.show_gs_player = value
             showExampleTooltip()
@@ -367,7 +416,7 @@ frame:SetScript("OnShow", function(frame)
     options.pawnScorePlayer = newCheckbox(
         "PawnScorePlayer",
         "PawnScore",
-        "Show player's PawnScore in tooltips (may affect performance)",
+        L["Show player's PawnScore in tooltips (may affect performance)"],
         function(self, value) 
             TacoTipConfig.show_pawn_player = value
             showExampleTooltip()
@@ -376,8 +425,8 @@ frame:SetScript("OnShow", function(frame)
 
     options.showTarget = newCheckbox(
         "ShowTarget",
-        "Target",
-        "Show unit's target in tooltips",
+        L["Target"],
+        L["Show unit's target in tooltips"],
         function(self, value) 
             TacoTipConfig.show_target = value
             showExampleTooltip()
@@ -386,8 +435,8 @@ frame:SetScript("OnShow", function(frame)
 
     options.showTeam = newCheckbox(
         "ShowTeam",
-        "Faction Icon",
-        "Show player's faction icon (Horde/Alliance) in tooltips",
+        L["Faction Icon"],
+        L["Show player's faction icon (Horde/Alliance) in tooltips"],
         function(self, value) 
             TacoTipConfig.show_team = value
             showExampleTooltip()
@@ -396,8 +445,8 @@ frame:SetScript("OnShow", function(frame)
 
     options.showPVPIcon = newCheckbox(
         "ShowPVPIcon",
-        "PVP Icon",
-        "Show player's pvp flag status as icon instead of text",
+        L["PVP Icon"],
+        L["Show player's pvp flag status as icon instead of text"],
         function(self, value) 
             TacoTipConfig.show_pvp_icon = value
             showExampleTooltip()
@@ -406,8 +455,8 @@ frame:SetScript("OnShow", function(frame)
 
     options.showHealthBar = newCheckbox(
         "ShowHealthBar",
-        "Health Bar",
-        "Show unit's health bar under tooltip",
+        L["Health Bar"],
+        L["Show unit's health bar under tooltip"],
         function(self, value) 
             TacoTipConfig.show_hp_bar = value
             showExampleTooltip()
@@ -416,8 +465,8 @@ frame:SetScript("OnShow", function(frame)
 
     options.showPowerBar = newCheckbox(
         "ShowPowerBar",
-        "Power Bar",
-        "Show unit's power bar under tooltip",
+        L["Power Bar"],
+        L["Show unit's power bar under tooltip"],
         function(self, value) 
             TacoTipConfig.show_power_bar = value
             showExampleTooltip()
@@ -427,35 +476,62 @@ frame:SetScript("OnShow", function(frame)
 
     local characterFrameText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     characterFrameText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -216)
-    characterFrameText:SetText("Character Frame")
+    characterFrameText:SetText(L["Character Frame"])
 
     options.gearScoreCharacter = newCheckbox(
         "GearScoreCharacter",
         "GearScore",
-        "Show GearScore in character frame",
+        L["Show GearScore in character frame"],
         function(self, value) 
             TacoTipConfig.show_gs_character = value
+            if (PaperDollFrame and PaperDollFrame:IsShown()) then
+                TT:RefreshCharacterFrame()
+            end
+            if (InspectFrame and InspectFrame:IsShown()) then
+                TT:RefreshInspectFrame()
+            end
         end)
     options.gearScoreCharacter:SetPoint("TOPLEFT", characterFrameText, "BOTTOMLEFT", -2, -4)
 
     options.averageItemLevel = newCheckbox(
         "AverageItemLevel",
-        "Average iLvl",
-        "Show Average Item Level in character frame",
+        L["Average iLvl"],
+        L["Show Average Item Level in character frame"],
         function(self, value) 
             TacoTipConfig.show_avg_ilvl = value
+            if (PaperDollFrame and PaperDollFrame:IsShown()) then
+                TT:RefreshCharacterFrame()
+            end
+            if (InspectFrame and InspectFrame:IsShown()) then
+                TT:RefreshInspectFrame()
+            end
         end)
     options.averageItemLevel:SetPoint("TOPLEFT", characterFrameText, "BOTTOMLEFT", 140, -4)
 
+    options.lockCharacterInfoPosition = newCheckbox(
+        "LockCharacterInfoPosition",
+        L["Lock Position"],
+        L["Lock GearScore and Average Item Level positions in character frame"],
+        function(self, value)
+            TacoTipConfig.unlock_info_position = not value
+            if (PaperDollFrame and PaperDollFrame:IsShown()) then
+                TT:RefreshCharacterFrame()
+            end
+            if (InspectFrame and InspectFrame:IsShown()) then
+                TT:RefreshInspectFrame()
+            end
+        end)
+    options.lockCharacterInfoPosition:SetPoint("TOPLEFT", characterFrameText, "BOTTOMLEFT", -2, -32)    
+
 
     local extraText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    extraText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -274)
-    extraText:SetText("Extra")
+    extraText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -302)
+    extraText:SetText(L["Extra"])
 
     options.showItemLevel = newCheckbox(
         "ShowItemLevel",
-        "Show Item Level",
-        "Display item level in the tooltip for certain items.",
+        L["Show Item Level"],
+        L["Display item level in the tooltip for certain items."],
         function(self, value) 
             TacoTipConfig.show_item_level = value
         end)
@@ -463,8 +539,8 @@ frame:SetScript("OnShow", function(frame)
 
     options.gearScoreItems = newCheckbox(
         "GearScoreItems",
-        "Show Item GearScore",
-        "Show GearScore in item tooltips",
+        L["Show Item GearScore"],
+        L["Show GearScore in item tooltips"],
         function(self, value) 
             TacoTipConfig.show_gs_items = value
         end)
@@ -472,8 +548,8 @@ frame:SetScript("OnShow", function(frame)
 
     options.uberTips = newCheckbox(
         "UberTips",
-        "Enhanced Tooltips",
-        "Show enhanced tooltips for spells (\"UberTooltips\")",
+        L["Enhanced Tooltips"],
+        L["TEXT_OPT_UBERTIPS"],
         function(self, value) 
             SetCVar("UberTooltips", value and "1" or "0")
         end)
@@ -481,8 +557,8 @@ frame:SetScript("OnShow", function(frame)
 
     options.hideInCombat = newCheckbox(
         "HideInCombat",
-        "Hide In Combat",
-        "Hide gearscore & talents in combat",
+        L["Disable In Combat"],
+        L["Disable gearscore & talents in combat"],
         function(self, value) 
             TacoTipConfig.hide_in_combat = value
         end)
@@ -490,37 +566,21 @@ frame:SetScript("OnShow", function(frame)
 
     options.chatClassColors = newCheckbox(
         "ChatClassColors",
-        "Chat Class Colors",
-        "Color names by class in chat windows",
+        L["Chat Class Colors"],
+        L["Color names by class in chat windows"],
         function(self, value) 
             SetCVar("chatClassColorOverride", value and "0" or "1")
         end)
     options.chatClassColors:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -116) 
 
-    options.instantFade = newCheckbox(
-        "InstantFade",
-        "Instant Fade",
-        "Fade out unit tooltips instantly",
-        function(self, value) 
-            TacoTipConfig.instant_fade = value
-            if (value) then
-                _G[addOnName].frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
-                Detours:DetourHook(_G[addOnName], GameTooltip, "FadeOut", function(self)
-                    self:Hide()
-                end)
-            else
-                _G[addOnName].frame:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
-                Detours:DetourUnhook(_G[addOnName], GameTooltip, "FadeOut")
-            end
-        end)
-    options.instantFade:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -144)
-    
     options.customPosition = newCheckbox(
         "CustomPosition",
-        "Custom Tooltip Position",
-        "Set a custom position for game tooltips",
+        L["Custom Tooltip Position"],
+        L["Set a custom position for tooltips"],
         function(self, value)
+            options.anchorMouse:SetDisabled(value)
             if (value) then
+                TacoTipConfig.anchor_mouse = false
                 options.moverBtn:SetEnabled(true)
                 TacoTip_CustomPosEnable(false)
             else
@@ -543,16 +603,72 @@ frame:SetScript("OnShow", function(frame)
         TacoTip_CustomPosEnable(true)
     end)
 
+    options.anchorMouse = newCheckbox(
+        "AnchorMouse",
+        L["Anchor to Mouse"],
+        L["Anchor tooltips to mouse cursor"],
+        function(self, value)
+            options.anchorMouseWorld:SetDisabled(not value)
+            options.customPosition:SetDisabled(value)
+            TacoTipConfig.anchor_mouse = value
+            if (value) then
+                options.moverBtn:SetEnabled(false)
+                if (TacoTipDragButton) then
+                    TacoTipDragButton:_Disable()
+                end
+                TacoTipConfig.custom_pos = nil
+                TacoTipConfig.custom_anchor = nil
+            end
+        end)
+    options.anchorMouse:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -32)
+
+    options.anchorMouseWorld = newCheckbox(
+        "AnchorMouseWorld",
+        L["Only in WorldFrame"],
+        L["Anchor to mouse only in WorldFrame\nSkips raid / party frames"],
+        function(self, value)
+            TacoTipConfig.anchor_mouse_world = value
+        end)
+    options.anchorMouseWorld:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 374, -32)
+
+    options.instantFade = newCheckbox(
+        "InstantFade",
+        L["Instant Fade"],
+        L["Fade out unit tooltips instantly"],
+        function(self, value) 
+            TacoTipConfig.instant_fade = value
+            if (value) then
+                TT.frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
+                Detours:DetourHook(TT, GameTooltip, "FadeOut", function(self)
+                    self:Hide()
+                end)
+            else
+                TT.frame:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
+                Detours:DetourUnhook(TT, GameTooltip, "FadeOut")
+            end
+        end)
+    options.instantFade:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -60)
+
+    options.anchorMouseSpells = newCheckbox(
+        "AnchorMouseSpells",
+        L["Anchor Spells to Mouse"],
+        L["Anchor spell tooltips to mouse cursor"],
+        function(self, value)
+            TacoTipConfig.anchor_mouse_spells = value
+        end)
+    options.anchorMouseSpells:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -88)    
+
+
     local styleText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     styleText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 341, -154)
-    styleText:SetText("Tooltip Style")
+    styleText:SetText(L["Tooltip Style"])
 
     local dropdown_values = {
-        {"FULL", "Always FULL"},
-        {"COMPACT/FULL", "Default COMPACT, hold SHIFT for FULL"},
-        {"COMPACT", "Always COMPACT"},
-        {"MINI/FULL", "Default MINI, hold SHIFT for FULL"},
-        {"MINI", "Always MINI"}
+        {L["FULL"], L["Always FULL"]},
+        {L["COMPACT/FULL"], L["Default COMPACT, hold SHIFT for FULL"]},
+        {L["COMPACT"], L["Always COMPACT"]},
+        {L["MINI/FULL"], L["Default MINI, hold SHIFT for FULL"]},
+        {L["MINI"], L["Always MINI"]}
     }
     options.styleChoice = newDropDown(
         "StyleChoice",
@@ -566,22 +682,22 @@ frame:SetScript("OnShow", function(frame)
 
     local althint1 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint1:SetPoint("TOPLEFT", styleText, "BOTTOMLEFT", -61, -48)
-    althint1:SetText("FULL")
+    althint1:SetText(L["FULL"])
     local althint2 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint2:SetPoint("TOPLEFT", althint1, "BOTTOMLEFT", 0, 0)
-    althint2:SetText("COMPACT")
+    althint2:SetText(L["COMPACT"])
     local althint3 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint3:SetPoint("TOPLEFT", althint2, "BOTTOMLEFT", 0, 0)
-    althint3:SetText("MINI")
+    althint3:SetText(L["MINI"])
     local althint4 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint4:SetPoint("TOPLEFT", styleText, "BOTTOMLEFT", 3, -48)
-    althint4:SetText("Wide, Dual Spec, GearScore, Average iLvl")
+    althint4:SetText(L["Wide, Dual Spec, GearScore, Average iLvl"])
     local althint5 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint5:SetPoint("TOPLEFT", althint4, "BOTTOMLEFT", 0, 0)
-    althint5:SetText("Narrow, Active Spec, GearScore")
+    althint5:SetText(L["Narrow, Active Spec, GearScore"])
     local althint6 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     althint6:SetPoint("TOPLEFT", althint5, "BOTTOMLEFT", 0, 0)
-    althint6:SetText("Narrow, Active Spec, GearScore, Average iLvl")
+    althint6:SetText(L["Narrow, Active Spec, GearScore, Average iLvl"])
 
 
     local function getConfig()
@@ -601,10 +717,11 @@ frame:SetScript("OnShow", function(frame)
         options.styleChoice:SetValue(TacoTipConfig.tip_style)
         options.showGuildRanks:SetDisabled(not TacoTipConfig.show_guild_name)
         options.customPosition:SetChecked(TacoTipConfig.custom_pos and true or false)
+        options.customPosition:SetDisabled(TacoTipConfig.anchor_mouse)
         options.moverBtn:SetEnabled(TacoTipConfig.custom_pos and true or false)
         options.pawnScorePlayer:SetDisabled(not isPawnLoaded)
         options.pawnScorePlayer:SetChecked(TacoTipConfig.show_pawn_player)
-        options.pawnScorePlayer.label:SetText(isPawnLoaded and "PawnScore" or "PawnScore (requires Pawn)")
+        options.pawnScorePlayer.label:SetText(isPawnLoaded and "PawnScore" or "PawnScore ("..L["requires Pawn"]..")")
         options.showTeam:SetChecked(TacoTipConfig.show_team)
         options.showPVPIcon:SetChecked(TacoTipConfig.show_pvp_icon)
         options.guildRankStyle1:SetChecked(not TacoTipConfig.guild_rank_alt_style)
@@ -615,17 +732,28 @@ frame:SetScript("OnShow", function(frame)
         options.showPowerBar:SetChecked(TacoTipConfig.show_power_bar)
         options.instantFade:SetChecked(TacoTipConfig.instant_fade)
         options.chatClassColors:SetChecked(GetCVar("chatClassColorOverride") == "0")
+        options.anchorMouse:SetChecked(TacoTipConfig.anchor_mouse)
+        options.anchorMouse:SetDisabled(TacoTipConfig.custom_pos and true or false)
+        options.anchorMouseWorld:SetChecked(TacoTipConfig.anchor_mouse_world)
+        options.anchorMouseWorld:SetDisabled(not TacoTipConfig.anchor_mouse)
+        options.anchorMouseSpells:SetChecked(TacoTipConfig.anchor_mouse_spells)
+        options.lockCharacterInfoPosition:SetChecked(not TacoTipConfig.unlock_info_position)
+        options.lockCharacterInfoPosition:SetDisabled(not (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl))
+    end
+
+    frame.Refresh = function()
+        getConfig()
+        showExampleTooltip()
     end
 
     local resetcfg = CreateFrame("Button", "TacoTipOptButtonResetCfg", frame, "UIPanelButtonTemplate")
-    resetcfg:SetText("Reset configuration")
+    resetcfg:SetText(L["Reset configuration"])
     resetcfg:SetWidth(177)
     resetcfg:SetHeight(24)
-    resetcfg:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 0, -180)
+    resetcfg:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 0, -152)
     resetcfg:SetScript("OnClick", function()
         resetCfg()
-        getConfig()
-        showExampleTooltip()
+        frame:Refresh()
     end)
 
     getConfig()
@@ -654,7 +782,7 @@ SlashCmdList["TACOTIP"] = function(msg)
         TacoTip_CustomPosEnable(true)
     elseif (cmd == "default") then
         if (not TacoTipConfig.custom_pos) then
-            print("|cff59f0dcTacoTip:|r Custom tooltip position is disabled.")
+            print("|cff59f0dcTacoTip:|r "..L["Custom tooltip position disabled."])
         end
         if (TacoTipDragButton) then
             TacoTipDragButton:_Disable()
@@ -664,10 +792,9 @@ SlashCmdList["TACOTIP"] = function(msg)
     elseif (cmd == "reset") then
         resetCfg()
         if (frame:IsShown()) then
-            getConfig()
-            showExampleTooltip()
+            frame:Refresh()
         end
-        print("|cff59f0dcTacoTip:|r Configuration has been reset to default.")
+        print("|cff59f0dcTacoTip:|r "..L["Configuration has been reset to default."])
     elseif (cmd == "save") then
         if (TacoTipDragButton and TacoTipDragButton:IsShown()) then
             TacoTipDragButton:_Save()
@@ -675,21 +802,21 @@ SlashCmdList["TACOTIP"] = function(msg)
     elseif (strfind(cmd, "anchor")) then
         if (strfind(cmd, "topleft")) then
             TacoTipConfig.custom_anchor = "TOPLEFT"
-            print("|cff59f0dcTacoTip:|r Custom position anchor set: 'TOPLEFT'")
+            print("|cff59f0dcTacoTip:|r "..L["Custom position anchor set"]..": 'TOPLEFT'")
         elseif (strfind(cmd, "topright")) then
             TacoTipConfig.custom_anchor = "TOPRIGHT"
-            print("|cff59f0dcTacoTip:|r Custom position anchor set: 'TOPRIGHT'")
+            print("|cff59f0dcTacoTip:|r "..L["Custom position anchor set"]..": 'TOPRIGHT'")
         elseif (strfind(cmd, "bottomleft")) then
             TacoTipConfig.custom_anchor = "BOTTOMLEFT"
-            print("|cff59f0dcTacoTip:|r Custom position anchor set: 'BOTTOMLEFT'")
+            print("|cff59f0dcTacoTip:|r "..L["Custom position anchor set"]..": 'BOTTOMLEFT'")
         elseif (strfind(cmd, "bottomright")) then
             TacoTipConfig.custom_anchor = "BOTTOMRIGHT"
-            print("|cff59f0dcTacoTip:|r Custom position anchor set: 'BOTTOMRIGHT'")
+            print("|cff59f0dcTacoTip:|r "..L["Custom position anchor set"]..": 'BOTTOMRIGHT'")
         elseif (strfind(cmd, "center")) then
             TacoTipConfig.custom_anchor = "CENTER"
-            print("|cff59f0dcTacoTip:|r Custom position anchor set: 'CENTER'")
+            print("|cff59f0dcTacoTip:|r "..L["Custom position anchor set"]..": 'CENTER'")
         else
-            print("|cff59f0dcTacoTip:|r Usage: /tacotip anchor ANCHOR. Valid ANCHOR values are TOPLEFT/TOPRIGHT/BOTTOMLEFT/BOTTOMRIGHT/CENTER.")
+            print("|cff59f0dcTacoTip:|r "..L["TEXT_HELP_ANCHOR"])
         end
     else
         InterfaceOptionsFrame_OpenToCategory(addOnName)

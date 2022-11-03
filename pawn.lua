@@ -113,7 +113,7 @@ function TT_PAWN:GetScore(unitorguid, useCallback)
             if (not IsReady) then
                 pawnScore = 0
             end
-            return pawnScore, CI:GetSpecializationName(class, spec), PawnGetScaleColor(scaleName, true) or "|cffffffff"
+            return pawnScore, CI:GetSpecializationName(class, spec, true), PawnGetScaleColor(scaleName, true) or "|cffffffff"
         end
     end
     return 0, "", "|cffffffff"

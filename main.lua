@@ -13,11 +13,13 @@ assert(LibStub:GetLibrary("LibClassicInspector", true), "TacoTip requires LibCla
 assert(LibStub:GetLibrary("LibDetours-1.0", true), "TacoTip requires LibDetours-1.0")
 --assert(LibStub:GetLibrary("LibClassicGearScore", true), "TacoTip requires LibClassicGearScore")
 
-_G[addOnName] = {}
+--_G[addOnName] = {}
 
 local CI = LibStub("LibClassicInspector")
 local Detours = LibStub("LibDetours-1.0")
 local GearScore = TT_GS
+local L = TACOTIP_LOCALE
+local TT = _G[addOnName]
 
 local isPawnLoaded = PawnClassicLastUpdatedVersion and PawnClassicLastUpdatedVersion >= 2.0538
 
@@ -29,6 +31,8 @@ local POWERBAR_UPDATE_RATE = 0.2
 
 local NewTicker = C_Timer.NewTicker
 local CAfter = C_Timer.After
+
+local playerClass = select(2, UnitClass("player"))
 
 function TacoTip_GSCallback(guid)
     local _, ttUnit = GameTooltip:GetUnit()
@@ -73,15 +77,15 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         if (targetName) then
             if (UnitIsUnit(unitTarget, unit)) then
                 if (wide_style) then
-                    tinsert(linesToAdd, {"Target:", "Self", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                    tinsert(linesToAdd, {L["Target"]..":", L["Self"], NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                 else
-                    tinsert(linesToAdd, {"Target: |cFFFFFFFFSelf|r"})
+                    tinsert(linesToAdd, {L["Target"]..": |cFFFFFFFF"..L["Self"].."|r"})
                 end
             elseif (UnitIsUnit(unitTarget, "player")) then
                 if (wide_style) then
-                    tinsert(linesToAdd, {"Target:", "You", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1, 1, 0})
+                    tinsert(linesToAdd, {L["Target"]..":", L["You"], NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1, 1, 0})
                 else
-                    tinsert(linesToAdd, {"Target: |cFFFFFF00You|r"})
+                    tinsert(linesToAdd, {L["Target"]..": |cFFFFFF00"..L["You"].."|r"})
                 end
             elseif (UnitIsPlayer(unitTarget)) then
                 local classc
@@ -93,28 +97,28 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                 end
                 if (classc) then
                     if (wide_style) then
-                        tinsert(linesToAdd, {"Target:", string.format("|cFF%02x%02x%02x%s|r (Player)", classc.r*255, classc.g*255, classc.b*255, targetName), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                        tinsert(linesToAdd, {L["Target"]..":", string.format("|cFF%02x%02x%02x%s|r (%s)", classc.r*255, classc.g*255, classc.b*255, targetName, L["Player"]), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                     else
-                        tinsert(linesToAdd, {string.format("Target: |cFF%02x%02x%02x%s|cFFFFFFFF (Player)|r", classc.r*255, classc.g*255, classc.b*255, targetName)})
+                        tinsert(linesToAdd, {string.format("%s: |cFF%02x%02x%02x%s|cFFFFFFFF (%s)|r", L["Target"], classc.r*255, classc.g*255, classc.b*255, targetName, L["Player"])})
                     end
                 else
                     if (wide_style) then
-                        tinsert(linesToAdd, {"Target:", targetName.." (Player)", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                        tinsert(linesToAdd, {L["Target"]..":", targetName.." ("..L["Player"]..")", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                     else
-                        tinsert(linesToAdd, {"Target: |cFFFFFFFF"..targetName.." (Player)|r"})
+                        tinsert(linesToAdd, {L["Target"]..": |cFFFFFFFF"..targetName.." ("..L["Player"]..")|r"})
                     end
                 end
             elseif (UnitIsUnit(unitTarget, "pet") or UnitIsOtherPlayersPet(unitTarget)) then
                 if (wide_style) then
-                    tinsert(linesToAdd, {"Target:", targetName.." (Pet)", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                    tinsert(linesToAdd, {L["Target"]..":", targetName.." ("..L["Pet"]..")", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                 else
-                    tinsert(linesToAdd, {"Target: |cFFFFFFFF"..targetName.." (Pet)|r"})
+                    tinsert(linesToAdd, {L["Target"]..": |cFFFFFFFF"..targetName.." ("..L["Pet"]..")|r"})
                 end
             else
                 if (wide_style) then
-                    tinsert(linesToAdd, {"Target:", targetName, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                    tinsert(linesToAdd, {L["Target"]..":", targetName, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                 else
-                    tinsert(linesToAdd, {"Target: |cFFFFFFFF"..targetName.."|r"})
+                    tinsert(linesToAdd, {L["Target"]..": |cFFFFFFFF"..targetName.."|r"})
                 end
             end
         else
@@ -126,9 +130,9 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
             end
             if (inSameMap) then
                 if (wide_style) then
-                    tinsert(linesToAdd, {"Target:", "None", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
+                    tinsert(linesToAdd, {L["Target"]..":", L["None"], NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
                 else
-                    tinsert(linesToAdd, {"Target: |cFF808080None|r"})
+                    tinsert(linesToAdd, {L["Target"]..": |cFF808080"..L["None"].."|r"})
                 end
             end
         end
@@ -161,7 +165,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                     if (TacoTipConfig.guild_rank_alt_style) then
                         text[2] = string.gsub(text[2], guildName, string.format("|cFF40FB40<%s> (%s)|r", guildName, guildRankName), 1)
                     else
-                        text[2] = string.gsub(text[2], guildName, string.format("|cFF40FB40%s of <%s>|r", guildRankName, guildName), 1)
+                        text[2] = string.gsub(text[2], guildName, string.format("|cFF40FB40"..L["FORMAT_GUILD_RANK_1"].."|r", guildRankName, guildName), 1)
                     end
                 else
                     text[2] = string.gsub(text[2], guildName, string.format("|cFF40FB40<%s>|r", guildName), 1)
@@ -192,31 +196,31 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
                 if (active == 2) then
                     if (spec2) then
                         if (wide_style) then
-                            tinsert(linesToAdd, {"Talents:", string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec2), y1, y2, y3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                            tinsert(linesToAdd, {L["Talents"]..":", string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec2, true), y1, y2, y3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                         else
-                            tinsert(linesToAdd, {string.format("Talents:|cFFFFFFFF %s [%d/%d/%d]|r", CI:GetSpecializationName(class, spec2), y1, y2, y3)})
+                            tinsert(linesToAdd, {string.format("%s:|cFFFFFFFF %s [%d/%d/%d]|r", L["Talents"], CI:GetSpecializationName(class, spec2, true), y1, y2, y3)})
                         end
                     end
                     if (spec1) then
                         if (wide_style) then
-                            tinsert(linesToAdd, {(spec2 and " " or "Talents:"), string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec1), x1, x2, x3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
+                            tinsert(linesToAdd, {(spec2 and " " or L["Talents"]..":"), string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec1, true), x1, x2, x3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
                         elseif (not spec2) then
-                            tinsert(linesToAdd, {string.format("Talents:|cFF808080 %s [%d/%d/%d]|r", CI:GetSpecializationName(class, spec1), x1, x2, x3)})
+                            tinsert(linesToAdd, {string.format("%s:|cFF808080 %s [%d/%d/%d]|r", L["Talents"], CI:GetSpecializationName(class, spec1, true), x1, x2, x3)})
                         end
                     end
                 elseif (active == 1) then
                     if (spec1) then
                         if (wide_style) then
-                            tinsert(linesToAdd, {"Talents:", string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec1), x1, x2, x3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
+                            tinsert(linesToAdd, {L["Talents"]..":", string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec1, true), x1, x2, x3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b})
                         else
-                            tinsert(linesToAdd, {string.format("Talents:|cFFFFFFFF %s [%d/%d/%d]|r", CI:GetSpecializationName(class, spec1), x1, x2, x3)})
+                            tinsert(linesToAdd, {string.format("%s:|cFFFFFFFF %s [%d/%d/%d]|r", L["Talents"], CI:GetSpecializationName(class, spec1, true), x1, x2, x3)})
                         end
                     end
                     if (spec2) then
                         if (wide_style) then
-                            tinsert(linesToAdd, {(spec1 and " " or "Talents:"), string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec2), y1, y2, y3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
+                            tinsert(linesToAdd, {(spec1 and " " or L["Talents"]..":"), string.format("%s [%d/%d/%d]", CI:GetSpecializationName(class, spec2, true), y1, y2, y3), NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b})
                         elseif (not spec1) then
-                            tinsert(linesToAdd, {string.format("Talents:|cFF808080 %s [%d/%d/%d]|r", CI:GetSpecializationName(class, spec2), y1, y2, y3)})
+                            tinsert(linesToAdd, {string.format("%s:|cFF808080 %s [%d/%d/%d]|r", L["Talents"], CI:GetSpecializationName(class, spec2, true), y1, y2, y3)})
                         end
                     end
                 end
@@ -379,13 +383,20 @@ local function itemToolTipHook(self)
         if (TacoTipConfig.show_item_level) then
             local ilvl = select(4, GetItemInfo(itemLink))
             if (ilvl and ilvl > 1) then
-                self:AddLine("Item Level "..ilvl, 1, 1, 1)
+                self:AddLine(L["Item Level"].." "..ilvl, 1, 1, 1)
             end
         end
         if (TacoTipConfig.show_gs_items) then
             local gs, _, r, g, b = GearScore:GetItemScore(itemLink)
             if (gs and gs > 1) then
                 self:AddLine("GearScore: "..gs, r, g, b)
+                if (TacoTipConfig.show_gs_items_hs or IsModifierKeyDown() or playerClass == "HUNTER" or 
+                    (InspectFrame and InspectFrame:IsShown() and InspectFrame.unit and select(2, UnitClass(InspectFrame.unit)) == "HUNTER")) then
+                    local hs, _, r, g, b = GearScore:GetItemHunterScore(itemLink)
+                    if (gs ~= hs) then
+                        self:AddLine("HunterScore: "..hs, r, g, b)
+                    end
+                end
             end
         end
     end
@@ -396,13 +407,51 @@ ShoppingTooltip1:HookScript("OnTooltipSetItem", itemToolTipHook)
 ShoppingTooltip2:HookScript("OnTooltipSetItem", itemToolTipHook)
 ItemRefTooltip:HookScript("OnTooltipSetItem", itemToolTipHook)
 
+local function CreateMouseAnchor()
+    TacoTipMouseAnchor = CreateFrame("Frame", nil, UIParent)
+    TacoTipMouseAnchor:EnableMouse(false)
+    TacoTipMouseAnchor:SetMovable(true)
+    TacoTipMouseAnchor:SetUserPlaced(false)
+    TacoTipMouseAnchor:SetClampedToScreen(true)
+    TacoTipMouseAnchor:SetSize(1,1)
+    TacoTipMouseAnchor:SetPoint("CENTER",UIParent,"BOTTOMLEFT",0,0)
+    TacoTipMouseAnchor:SetScript("OnUpdate", function(self)
+        local cx, cy = GetCursorPosition()
+        local scale = UIParent:GetEffectiveScale()
+        TacoTipMouseAnchor:SetPoint("CENTER",UIParent,"BOTTOMLEFT",cx/scale,cy/scale)
+    end)
+end
+
 hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
-    if (TacoTipConfig.custom_pos) then
-        tooltip:SetOwner(TacoTipDragButton,"ANCHOR_NONE")
-        tooltip:ClearAllPoints(true)
-        tooltip:SetPoint(TacoTipConfig.custom_anchor or "TOPLEFT", TacoTipDragButton, "CENTER")
-    elseif (TacoTipConfig.show_hp_bar and TacoTipConfig.show_power_bar) then
-        tooltip:SetPoint("BOTTOMRIGHT", "UIParent", "BOTTOMRIGHT", -CONTAINER_OFFSET_X-13, CONTAINER_OFFSET_Y+9)
+    if (TacoTipConfig.anchor_mouse_spells) then
+        local parentparent = parent and parent:GetParent()
+        if (parent.action or parent.spellId or (parentparent and parentparent.action) or (parentparent and parentparent.spellId)) then
+            if (parentparent == MultiBarBottomRight or parentparent == MultiBarRight or parentparent == MultiBarLeft) then
+                tooltip:SetOwner(parent, "ANCHOR_LEFT")
+            else
+                tooltip:SetOwner(parent, "ANCHOR_RIGHT")
+            end
+            return
+        end
+    end
+    if (TacoTipConfig.anchor_mouse) then
+        if (not TacoTipConfig.anchor_mouse_world or GetMouseFocus() == WorldFrame) then
+            if (not TacoTipMouseAnchor) then
+                CreateMouseAnchor()
+                CreateMouseAnchor = nil
+            end
+            tooltip:SetOwner(TacoTipMouseAnchor,"ANCHOR_NONE")
+            tooltip:ClearAllPoints(true)
+            tooltip:SetPoint("BOTTOMLEFT", TacoTipMouseAnchor, "CENTER", 10, 10)
+        end
+    else
+        if (TacoTipConfig.custom_pos) then
+            tooltip:SetOwner(TacoTipDragButton,"ANCHOR_NONE")
+            tooltip:ClearAllPoints(true)
+            tooltip:SetPoint(TacoTipConfig.custom_anchor or "TOPLEFT", TacoTipDragButton, "CENTER")
+        elseif (TacoTipConfig.show_hp_bar and TacoTipConfig.show_power_bar) then
+            tooltip:SetPoint("BOTTOMRIGHT", "UIParent", "BOTTOMRIGHT", -CONTAINER_OFFSET_X-13, CONTAINER_OFFSET_Y+9)
+        end
     end
 end)
 
@@ -412,29 +461,77 @@ GameTooltipStatusBar:HookScript("OnHide", function(self)
     end
 end)
 
-PaperDollFrame:CreateFontString("PersonalGearScore")
-PersonalGearScore:SetFont("Fonts\\FRIZQT__.TTF", 10)
-PersonalGearScore:SetText("0")
-PersonalGearScore:SetPoint("BOTTOMLEFT",PaperDollFrame,"TOPLEFT",72,-253)
-PersonalGearScore:Show()
-PaperDollFrame:CreateFontString("PersonalGearScoreText")
-PersonalGearScoreText:SetFont("Fonts\\FRIZQT__.TTF", 10)
-PersonalGearScoreText:SetText("GearScore")
-PersonalGearScoreText:SetPoint("BOTTOMLEFT",PaperDollFrame,"TOPLEFT",72,-265)
-PersonalGearScoreText:Show()
+local function CreateMover(parent, topkek, bottomright, callbackFunc)
+    local mover = CreateFrame("Button", nil, parent)
+    mover:SetFrameStrata("TOOLTIP")
+    mover:SetFrameLevel(999)
+    mover:EnableMouse(true)
+    mover:SetMovable(true)
+    mover:SetUserPlaced(false)
+    mover:SetClampedToScreen(true)
+    mover:SetPoint("TOPLEFT",topkek,"TOPLEFT")
+    mover:SetPoint("BOTTOMRIGHT",bottomright,"BOTTOMRIGHT")
+    mover:RegisterForDrag("LeftButton")
+    mover:SetScript("OnDragStart", function(self)
+        self:StartMoving()
+        self:SetScript("OnUpdate", function(self)
+            local cx, cy = GetCursorPosition()
+            local scale = UIParent:GetEffectiveScale()
+            local fx, fy = parent:GetRect()
+            callbackFunc(cx/scale-fx, cy/scale-fy)
+        end)
+    end)
+    mover:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        self:SetScript("OnUpdate", nil)
+        mover:ClearAllPoints()
+        mover:SetPoint("TOPLEFT",topkek,"TOPLEFT")
+        mover:SetPoint("BOTTOMRIGHT",bottomright,"BOTTOMRIGHT")
+    end)
+    return mover
+end
 
-PaperDollFrame:CreateFontString("PersonalAvgItemLvl")
-PersonalAvgItemLvl:SetFont("Fonts\\FRIZQT__.TTF", 10)
-PersonalAvgItemLvl:SetText("0")
-PersonalAvgItemLvl:SetPoint("BOTTOMLEFT",PaperDollFrame,"TOPLEFT",270,-253)
-PersonalAvgItemLvl:Show()
-PaperDollFrame:CreateFontString("PersonalAvgItemLvlText")
-PersonalAvgItemLvlText:SetFont("Fonts\\FRIZQT__.TTF", 10)
-PersonalAvgItemLvlText:SetText("iLvl")
-PersonalAvgItemLvlText:SetPoint("BOTTOMLEFT",PaperDollFrame,"TOPLEFT",270,-265)
-PersonalAvgItemLvlText:Show()
+function TT:InitCharacterFrame()
+    CharacterModelFrame:CreateFontString("PersonalGearScore")
+    PersonalGearScore:SetFont(L["CHARACTER_FRAME_GS_VALUE_FONT"], L["CHARACTER_FRAME_GS_VALUE_FONT_SIZE"])
+    PersonalGearScore:SetText("0")
+    PersonalGearScore.RefreshPosition = function()
+        PersonalGearScore:SetPoint("BOTTOMLEFT",PaperDollFrame,"BOTTOMLEFT",L["CHARACTER_FRAME_GS_VALUE_XPOS"] + (TacoTipConfig.character_gs_offset_x or 0),L["CHARACTER_FRAME_GS_VALUE_YPOS"] + (TacoTipConfig.character_gs_offset_y or 0))
+    end
+    PersonalGearScore:RefreshPosition()
 
-local function RefreshCharacterFrame()
+    CharacterModelFrame:CreateFontString("PersonalGearScoreText")
+    PersonalGearScoreText:SetFont(L["CHARACTER_FRAME_GS_TITLE_FONT"], L["CHARACTER_FRAME_GS_TITLE_FONT_SIZE"])
+    PersonalGearScoreText:SetText("GearScore")
+    PersonalGearScoreText.RefreshPosition = function()
+        PersonalGearScoreText:SetPoint("BOTTOMLEFT",PaperDollFrame,"BOTTOMLEFT",L["CHARACTER_FRAME_GS_TITLE_XPOS"] + (TacoTipConfig.character_gs_offset_x or 0),L["CHARACTER_FRAME_GS_TITLE_YPOS"] + (TacoTipConfig.character_gs_offset_y or 0))
+    end
+    PersonalGearScoreText:RefreshPosition()
+
+    CharacterModelFrame:CreateFontString("PersonalAvgItemLvl")
+    PersonalAvgItemLvl:SetFont(L["CHARACTER_FRAME_ILVL_VALUE_FONT"], L["CHARACTER_FRAME_ILVL_VALUE_FONT_SIZE"])
+    PersonalAvgItemLvl:SetText("0")
+    PersonalAvgItemLvl.RefreshPosition = function()
+        PersonalAvgItemLvl:SetPoint("BOTTOMLEFT",PaperDollFrame,"BOTTOMLEFT",L["CHARACTER_FRAME_ILVL_VALUE_XPOS"] + (TacoTipConfig.character_ilvl_offset_x or 0),L["CHARACTER_FRAME_ILVL_VALUE_YPOS"] + (TacoTipConfig.character_ilvl_offset_y or 0))
+    end
+    PersonalAvgItemLvl:RefreshPosition()
+
+    CharacterModelFrame:CreateFontString("PersonalAvgItemLvlText")
+    PersonalAvgItemLvlText:SetFont(L["CHARACTER_FRAME_ILVL_TITLE_FONT"], L["CHARACTER_FRAME_ILVL_TITLE_FONT_SIZE"])
+    PersonalAvgItemLvlText:SetText("iLvl")
+    PersonalAvgItemLvlText.RefreshPosition = function()
+        PersonalAvgItemLvlText:SetPoint("BOTTOMLEFT",PaperDollFrame,"BOTTOMLEFT",L["CHARACTER_FRAME_ILVL_TITLE_XPOS"] + (TacoTipConfig.character_ilvl_offset_x or 0),L["CHARACTER_FRAME_ILVL_TITLE_YPOS"] + (TacoTipConfig.character_ilvl_offset_y or 0))
+    end
+    PersonalAvgItemLvlText:RefreshPosition()
+
+    PaperDollFrame:HookScript("OnShow", TT.RefreshCharacterFrame)
+end
+
+function TT:RefreshCharacterFrame()
+    if (TT.InitCharacterFrame) then
+        TT:InitCharacterFrame()
+        TT.InitCharacterFrame = nil
+    end
     local MyGearScore, MyAverageScore, r, g, b = 0,0,0,0,0
     if (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl) then
         MyGearScore, MyAverageScore = GearScore:GetScore("player")
@@ -445,89 +542,166 @@ local function RefreshCharacterFrame()
         PersonalGearScore:SetTextColor(r, g, b, 1)
         PersonalGearScore:Show()
         PersonalGearScoreText:Show()
+        if (TacoTipConfig.unlock_info_position) then
+            if (not PersonalGearScoreText.mover) then
+                PersonalGearScoreText.mover = CreateMover(PaperDollFrame, PersonalGearScore, PersonalGearScoreText, function(ofx, ofy)
+                    TacoTipConfig.character_gs_offset_x = ofx-L["CHARACTER_FRAME_GS_TITLE_XPOS"]
+                    TacoTipConfig.character_gs_offset_y = ofy-L["CHARACTER_FRAME_GS_TITLE_YPOS"]
+                    PersonalGearScore:RefreshPosition()
+                    PersonalGearScoreText:RefreshPosition()
+                end)
+            end
+            PersonalGearScoreText.mover:Show()
+        elseif (PersonalGearScoreText.mover) then 
+            PersonalGearScoreText.mover:Hide()
+        end
     else
         PersonalGearScore:Hide()
         PersonalGearScoreText:Hide()
+        if (PersonalGearScoreText.mover) then
+            PersonalGearScoreText.mover:Hide()
+        end
     end
     if (TacoTipConfig.show_avg_ilvl) then
         PersonalAvgItemLvl:SetText(MyAverageScore);
         PersonalAvgItemLvl:SetTextColor(r, g, b, 1)
         PersonalAvgItemLvl:Show()
         PersonalAvgItemLvlText:Show()
+        if (TacoTipConfig.unlock_info_position) then
+            if (not PersonalAvgItemLvlText.mover) then
+                PersonalAvgItemLvlText.mover = CreateMover(PaperDollFrame, PersonalAvgItemLvl, PersonalAvgItemLvlText, function(ofx, ofy)
+                    TacoTipConfig.character_ilvl_offset_x = ofx-L["CHARACTER_FRAME_ILVL_TITLE_XPOS"]
+                    TacoTipConfig.character_ilvl_offset_y = ofy-L["CHARACTER_FRAME_ILVL_TITLE_YPOS"]
+                    PersonalAvgItemLvl:RefreshPosition()
+                    PersonalAvgItemLvlText:RefreshPosition()
+                end)
+            end
+            PersonalAvgItemLvlText.mover:Show()
+        elseif (PersonalAvgItemLvlText.mover) then
+            PersonalAvgItemLvlText.mover:Hide()
+        end
     else
         PersonalAvgItemLvl:Hide()
         PersonalAvgItemLvlText:Hide()
+        if (PersonalAvgItemLvlText.mover) then
+            PersonalAvgItemLvlText.mover:Hide()
+        end
     end
 end
 
-PaperDollFrame:HookScript("OnShow", function()
-    RefreshCharacterFrame()
-end)
 
-local function RefreshInspectFrame()
-    if (not InCombatLockdown() and (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl)) then
-        local inspect_gs, inspect_avg = GearScore:GetScore(InspectFrame.unit)
-        local r, g, b = GearScore:GetQuality(inspect_gs)
-        if (TacoTipConfig.show_gs_character) then
-            InspectGearScore:SetText(inspect_gs);
-            InspectGearScore:SetTextColor(r, g, b, 1)
-            InspectGearScore:Show()
-            InspectGearScoreText:Show()
-        else
-            InspectGearScore:Hide()
-            InspectGearScoreText:Hide()
+function TT:InitInspectFrame()
+    InspectModelFrame:CreateFontString("InspectGearScore")
+    InspectGearScore:SetFont(L["INSPECT_FRAME_GS_VALUE_FONT"], L["INSPECT_FRAME_GS_VALUE_FONT_SIZE"])
+    InspectGearScore:SetText("0")
+    InspectGearScore.RefreshPosition = function()
+        InspectGearScore:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"BOTTOMLEFT",L["INSPECT_FRAME_GS_VALUE_XPOS"] + (TacoTipConfig.inspect_gs_offset_x or 0),L["INSPECT_FRAME_GS_VALUE_YPOS"] + (TacoTipConfig.inspect_gs_offset_y or 0))
+    end
+    InspectGearScore:RefreshPosition()
+
+    InspectModelFrame:CreateFontString("InspectGearScoreText")
+    InspectGearScoreText:SetFont(L["INSPECT_FRAME_GS_TITLE_FONT"], L["INSPECT_FRAME_GS_TITLE_FONT_SIZE"])
+    InspectGearScoreText:SetText("GearScore")
+    InspectGearScoreText.RefreshPosition = function()
+        InspectGearScoreText:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"BOTTOMLEFT",L["INSPECT_FRAME_GS_TITLE_XPOS"] + (TacoTipConfig.inspect_gs_offset_x or 0),L["INSPECT_FRAME_GS_TITLE_YPOS"] + (TacoTipConfig.inspect_gs_offset_y or 0))
+    end
+    InspectGearScoreText:RefreshPosition()
+
+    InspectModelFrame:CreateFontString("InspectAvgItemLvl")
+    InspectAvgItemLvl:SetFont(L["INSPECT_FRAME_ILVL_VALUE_FONT"], L["INSPECT_FRAME_ILVL_VALUE_FONT_SIZE"])
+    InspectAvgItemLvl:SetText("0")
+    InspectAvgItemLvl.RefreshPosition = function()
+        InspectAvgItemLvl:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"BOTTOMLEFT",L["INSPECT_FRAME_ILVL_VALUE_XPOS"] + (TacoTipConfig.inspect_ilvl_offset_x or 0),L["INSPECT_FRAME_ILVL_VALUE_YPOS"] + (TacoTipConfig.inspect_ilvl_offset_y or 0))
+    end
+    InspectAvgItemLvl:RefreshPosition()
+
+    InspectModelFrame:CreateFontString("InspectAvgItemLvlText")
+    InspectAvgItemLvlText:SetFont(L["INSPECT_FRAME_ILVL_TITLE_FONT"], L["INSPECT_FRAME_ILVL_TITLE_FONT_SIZE"])
+    InspectAvgItemLvlText:SetText("iLvl")
+    InspectAvgItemLvlText.RefreshPosition = function()
+        InspectAvgItemLvlText:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"BOTTOMLEFT",L["INSPECT_FRAME_ILVL_TITLE_XPOS"] + (TacoTipConfig.inspect_ilvl_offset_x or 0),L["INSPECT_FRAME_ILVL_TITLE_YPOS"] + (TacoTipConfig.inspect_ilvl_offset_y or 0))
+    end
+    InspectAvgItemLvlText:RefreshPosition()
+
+    InspectPaperDollFrame:HookScript("OnShow", TT.RefreshInspectFrame)
+    InspectFrame:HookScript("OnHide", function()
+        InspectGearScore:Hide()
+        InspectAvgItemLvl:Hide()
+    end)    
+end
+
+function TT:RefreshInspectFrame()
+    if (InCombatLockdown()) then
+        return
+    end
+    if (TT.InitInspectFrame) then
+        if (not InspectModelFrame or not InspectPaperDollFrame) then
+            return
         end
-        if (TacoTipConfig.show_avg_ilvl) then
-            InspectAvgItemLvl:SetText(inspect_avg);
-            InspectAvgItemLvl:SetTextColor(r, g, b, 1)
-            InspectAvgItemLvl:Show()
-            InspectAvgItemLvlText:Show()
-        else
-            InspectAvgItemLvl:Hide()
-            InspectAvgItemLvlText:Hide()
+        TT:InitInspectFrame()
+        TT.InitInspectFrame = nil
+    end
+    local inspect_gs, inspect_avg, r, g, b = 0,0,0,0,0
+    if (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl) then
+        inspect_gs, inspect_avg = GearScore:GetScore(InspectFrame.unit)
+        r, g, b = GearScore:GetQuality(inspect_gs)
+    end
+    if (TacoTipConfig.show_gs_character) then
+        InspectGearScore:SetText(inspect_gs);
+        InspectGearScore:SetTextColor(r, g, b, 1)
+        InspectGearScore:Show()
+        InspectGearScoreText:Show()
+        if (TacoTipConfig.unlock_info_position) then
+            if (not InspectGearScoreText.mover) then
+                InspectGearScoreText.mover = CreateMover(InspectPaperDollFrame, InspectGearScore, InspectGearScoreText, function(ofx, ofy)
+                    TacoTipConfig.inspect_gs_offset_x = ofx-L["INSPECT_FRAME_GS_TITLE_XPOS"]
+                    TacoTipConfig.inspect_gs_offset_y = ofy-L["INSPECT_FRAME_GS_TITLE_YPOS"]
+                    InspectGearScore:RefreshPosition()
+                    InspectGearScoreText:RefreshPosition()
+                end)
+            end
+            InspectGearScoreText.mover:Show()
+        elseif (InspectGearScoreText.mover) then
+            InspectGearScoreText.mover:Hide()
         end
     else
         InspectGearScore:Hide()
         InspectGearScoreText:Hide()
+        if (InspectGearScoreText.mover) then
+            InspectGearScoreText.mover:Hide()
+        end
+    end
+    if (TacoTipConfig.show_avg_ilvl) then
+        InspectAvgItemLvl:SetText(inspect_avg);
+        InspectAvgItemLvl:SetTextColor(r, g, b, 1)
+        InspectAvgItemLvl:Show()
+        InspectAvgItemLvlText:Show()
+        if (TacoTipConfig.unlock_info_position) then
+            if (not InspectAvgItemLvlText.mover) then
+                InspectAvgItemLvlText.mover = CreateMover(InspectPaperDollFrame, InspectAvgItemLvl, InspectAvgItemLvlText, function(ofx, ofy)
+                    TacoTipConfig.inspect_ilvl_offset_x = ofx-L["INSPECT_FRAME_ILVL_TITLE_XPOS"]
+                    TacoTipConfig.inspect_ilvl_offset_y = ofy-L["INSPECT_FRAME_ILVL_TITLE_YPOS"]
+                    InspectAvgItemLvl:RefreshPosition()
+                    InspectAvgItemLvlText:RefreshPosition()
+                end)
+            end
+            InspectAvgItemLvlText.mover:Show()
+        elseif (InspectAvgItemLvlText.mover) then
+            InspectAvgItemLvlText.mover:Hide()
+        end
+    else
         InspectAvgItemLvl:Hide()
         InspectAvgItemLvlText:Hide()
+        if (InspectAvgItemLvlText.mover) then
+            InspectAvgItemLvlText.mover:Hide()
+        end
     end
-end
-
-local inspect_init = false
-local function InitInspectFrame()
-    inspect_init = true
-    local text1 = InspectModelFrame:CreateFontString("InspectGearScore")
-    text1:SetFont("Fonts\\FRIZQT__.TTF", 10)
-    text1:SetText("0")
-    text1:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",72,-359)
-
-    local text2 = InspectModelFrame:CreateFontString("InspectGearScoreText")
-    text2:SetFont("Fonts\\FRIZQT__.TTF", 10)
-    text2:SetText("GearScore")
-    text2:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",72,-372)
-
-    local text3 = InspectModelFrame:CreateFontString("InspectAvgItemLvl")
-    text3:SetFont("Fonts\\FRIZQT__.TTF", 10)
-    text3:SetText("0")
-    text3:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",270,-359)
-
-    local text4 = InspectModelFrame:CreateFontString("InspectAvgItemLvlText")
-    text4:SetFont("Fonts\\FRIZQT__.TTF", 10)
-    text4:SetText("iLvl")
-    text4:SetPoint("BOTTOMLEFT",InspectPaperDollFrame,"TOPLEFT",270,-372)
-
-    InspectPaperDollFrame:HookScript("OnShow", RefreshInspectFrame)
-    InspectFrame:HookScript("OnHide", function()
-        InspectGearScore:Hide()
-        InspectAvgItemLvl:Hide()
-    end)
 end
 
 local function onEvent(self, event, ...)
     if (event == "PLAYER_EQUIPMENT_CHANGED") then
-        if (PaperDollFrame:IsShown()) then
-            RefreshCharacterFrame()
+        if (PaperDollFrame and PaperDollFrame:IsShown()) then
+            TT:RefreshCharacterFrame()
         end
     elseif (event == "MODIFIER_STATE_CHANGED") then
         local _, unit = GameTooltip:GetUnit()
@@ -551,9 +725,12 @@ local function onEvent(self, event, ...)
             end
             if (TacoTipConfig.instant_fade) then
                 self:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
-                Detours:DetourHook(_G[addOnName], GameTooltip, "FadeOut", function(self)
+                Detours:DetourHook(TT, GameTooltip, "FadeOut", function(self)
                     self:Hide()
                 end)
+            end
+            if (CharacterModelFrame and PaperDollFrame) then
+                TT:RefreshCharacterFrame()
             end
         end
     elseif (event == "UPDATE_MOUSEOVER_UNIT") then
@@ -565,6 +742,10 @@ local function onEvent(self, event, ...)
             end)
         end
     else -- INVENTORY_READY / TALENTS_READY
+        if (TT.InitInspectFrame and InspectModelFrame and InspectPaperDollFrame) then
+            TT:InitInspectFrame()
+            TT.InitInspectFrame = nil
+        end
         local guid = ...
         if (guid) then
             local _, ttUnit = GameTooltip:GetUnit()
@@ -572,12 +753,8 @@ local function onEvent(self, event, ...)
                 GameTooltip:SetUnit(ttUnit)
             end
             if (event == "INVENTORY_READY") then
-                if (not inspect_init) then
-                    if (InspectFrame and InspectModelFrame and InspectPaperDollFrame) then
-                        InitInspectFrame()
-                    end
-                elseif (InspectFrame and InspectFrame:IsShown()) then
-                    RefreshInspectFrame()
+                if (InspectFrame and InspectFrame:IsShown()) then
+                    TT:RefreshInspectFrame()
                 end
             end
         end
@@ -593,8 +770,9 @@ do
     f:RegisterEvent("ADDON_LOADED")
     CI.RegisterCallback(addOnName, "INVENTORY_READY", function(...) onEvent(f, ...) end)
     CI.RegisterCallback(addOnName, "TALENTS_READY", function(...) onEvent(f, ...) end)
-    _G[addOnName].frame = f
+    TT.frame = f
 end
+
 
 function TacoTip_CustomPosEnable(show)
     if (not TacoTipDragButton) then
@@ -632,7 +810,7 @@ function TacoTip_CustomPosEnable(show)
                 end
                 TacoTipDragButton:ShowExample()
             elseif (button == "RightButton") then
-                StaticPopupDialogs["_TacoTipDragButtonConfirm_"] = {["whileDead"]=1,["hideOnEscape"]=1,["timeout"]=0,["exclusive"]=1,["enterClicksFirstButton"]=1,["text"]="\nDo you want to save custom tooltip position or reset back to default?\n\n",
+                StaticPopupDialogs["_TacoTipDragButtonConfirm_"] = {["whileDead"]=1,["hideOnEscape"]=1,["timeout"]=0,["exclusive"]=1,["enterClicksFirstButton"]=1,["text"]=L["TEXT_DLG_CUSTOM_POS_CONFIRM"],
                 ["button1"]=SAVE,["button2"]=CANCEL,["button3"]=RESET,["OnAccept"]=function() TacoTipDragButton:_Save() end,["OnAlt"]=function() TacoTipDragButton:_Disable() end}
                 StaticPopup_Show("_TacoTipDragButtonConfirm_")
             end
@@ -644,7 +822,7 @@ function TacoTip_CustomPosEnable(show)
             self.ticker = NewTicker(1, function()
                 TacoTipDragButton:ShowExample()
             end)
-            Detours:ScriptHook(_G[addOnName], GameTooltip, "OnShow", function(self)
+            Detours:ScriptHook(TT, GameTooltip, "OnShow", function(self)
                 if (TacoTipDragButton:IsShown()) then
                     local name, unit = self:GetUnit()
                     if (not unit or not UnitIsUnit(unit, "player")) then
@@ -652,34 +830,34 @@ function TacoTip_CustomPosEnable(show)
                     end
                 end
             end)
-            Detours:ScriptHook(_G[addOnName], GameTooltip, "OnHide", function(self)
+            Detours:ScriptHook(TT, GameTooltip, "OnHide", function(self)
                 if (TacoTipDragButton:IsShown()) then
                     TacoTipDragButton:ShowExample()
                 end
             end)
             TacoTipDragButton:ShowExample()
-            print("|cff59f0dcTacoTip:|r Mover is shown. Drag the yellow dot to move the tooltip. Middle-Click to change anchor. Right-Click to save.")
+            print("|cff59f0dcTacoTip:|r "..L["TEXT_HELP_MOVER_SHOWN"])
         end)
         TacoTipDragButton:SetScript("OnHide", function(self)
             if (self.ticker) then
                 self.ticker:Cancel()
             end
-            Detours:ScriptUnhook(_G[addOnName], GameTooltip, "OnShow")
-            Detours:ScriptUnhook(_G[addOnName], GameTooltip, "OnHide")
+            Detours:ScriptUnhook(TT, GameTooltip, "OnShow")
+            Detours:ScriptUnhook(TT, GameTooltip, "OnHide")
         end)
         function TacoTipDragButton:ShowExample()
             GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
             GameTooltip:SetUnit("player")
-            GameTooltip:AddDoubleLine("Left-Click", "Drag to Move", 1, 1, 1)
-            GameTooltip:AddDoubleLine("Middle-Click", "Change Anchor", 1, 1, 1)
-            GameTooltip:AddDoubleLine("Right-Click", "Save Position", 1, 1, 1)
+            GameTooltip:AddDoubleLine(L["Left-Click"], L["Drag to Move"], 1, 1, 1)
+            GameTooltip:AddDoubleLine(L["Middle-Click"], L["Change Anchor"], 1, 1, 1)
+            GameTooltip:AddDoubleLine(L["Right-Click"], L["Save Position"], 1, 1, 1)
             GameTooltip:Show()
         end
         function TacoTipDragButton:_Enable()
             if (not TacoTipConfig.custom_pos) then
                 local from, _, to, x, y = TacoTipDragButton:GetPoint()
                 TacoTipConfig.custom_pos = {from, to, x, y}
-                print("|cff59f0dcTacoTip:|r Custom tooltip position enabled.")
+                print("|cff59f0dcTacoTip:|r "..L["Custom tooltip position enabled."])
             end
             if (TacoTipOptCheckBoxCustomPosition) then
                 TacoTipOptCheckBoxCustomPosition:SetChecked(true)
@@ -687,23 +865,34 @@ function TacoTip_CustomPosEnable(show)
             if (TacoTipOptButtonMover) then
                 TacoTipOptButtonMover:SetEnabled(true)
             end
+            if (TacoTipOptCheckBoxAnchorMouse) then
+                TacoTipOptCheckBoxAnchorMouse:SetChecked(false)
+                TacoTipOptCheckBoxAnchorMouse:SetDisabled(true)
+            end
+            if (TacoTipOptCheckBoxAnchorMouseWorld) then
+                TacoTipOptCheckBoxAnchorMouseWorld:SetDisabled(true)
+            end
+            TacoTipConfig.anchor_mouse = false
         end
         function TacoTipDragButton:_Save()
             TacoTipDragButton:Hide()
-            print("|cff59f0dcTacoTip:|r Custom tooltip position saved. Mover hidden. Type '/tacotip custom' to show mover again.")
+            print("|cff59f0dcTacoTip:|r "..L["TEXT_HELP_MOVER_SAVED"])
         end
         function TacoTipDragButton:_Disable()
             TacoTipDragButton:Hide()
             GameTooltip:Hide()
             GameTooltip:ClearAllPoints()
             if (TacoTipConfig.custom_pos) then
-                print("|cff59f0dcTacoTip:|r Custom tooltip position disabled. Tooltip position back to default.")
+                print("|cff59f0dcTacoTip:|r "..L["Custom tooltip position disabled."])
             end
             if (TacoTipOptCheckBoxCustomPosition) then
                 TacoTipOptCheckBoxCustomPosition:SetChecked(false)
             end
             if (TacoTipOptButtonMover) then
                 TacoTipOptButtonMover:SetEnabled(false)
+            end
+            if (TacoTipOptCheckBoxAnchorMouse) then
+                TacoTipOptCheckBoxAnchorMouse:SetDisabled(false)
             end
             TacoTipConfig.custom_pos = nil
             TacoTipConfig.custom_anchor = nil

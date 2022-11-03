@@ -65,7 +65,6 @@ lib.cache = lib.cache or {["len"] = 0}
 lib.queue = lib.queue or {}
 lib.guildies = lib.guildies or {}
 
--- TODO: localization?
 lib.spec_table = lib.spec_table or {
     ["WARRIOR"] = {"Arms", "Fury", "Protection"},
     ["PALADIN"] = {"Holy", "Protection", "Retribution"},
@@ -79,8 +78,143 @@ lib.spec_table = lib.spec_table or {
     ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
 }
 
+-- TODO: localization
+if (GetLocale() == "deDE") then
+lib.spec_table_localized = lib.spec_table_localized or {
+    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
+    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
+    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
+    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
+    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
+    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
+    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
+    ["MAGE"] = {"Arcane", "Fire", "Frost"},
+    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
+    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+}
+elseif (GetLocale() == "esES") then
+lib.spec_table_localized = lib.spec_table_localized or {
+    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
+    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
+    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
+    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
+    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
+    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
+    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
+    ["MAGE"] = {"Arcane", "Fire", "Frost"},
+    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
+    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+}
+elseif (GetLocale() == "esMX") then
+lib.spec_table_localized = lib.spec_table_localized or {
+    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
+    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
+    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
+    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
+    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
+    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
+    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
+    ["MAGE"] = {"Arcane", "Fire", "Frost"},
+    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
+    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+}
+elseif (GetLocale() == "frFR") then
+lib.spec_table_localized = lib.spec_table_localized or {
+    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
+    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
+    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
+    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
+    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
+    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
+    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
+    ["MAGE"] = {"Arcane", "Fire", "Frost"},
+    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
+    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+}
+elseif (GetLocale() == "itIT") then
+lib.spec_table_localized = lib.spec_table_localized or {
+    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
+    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
+    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
+    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
+    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
+    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
+    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
+    ["MAGE"] = {"Arcane", "Fire", "Frost"},
+    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
+    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+}
+elseif (GetLocale() == "koKR") then
+lib.spec_table_localized = lib.spec_table_localized or {
+    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
+    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
+    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
+    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
+    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
+    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
+    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
+    ["MAGE"] = {"Arcane", "Fire", "Frost"},
+    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
+    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+}
+elseif (GetLocale() == "ruRU") then
+lib.spec_table_localized = lib.spec_table_localized or {
+    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
+    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
+    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
+    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
+    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
+    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
+    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
+    ["MAGE"] = {"Arcane", "Fire", "Frost"},
+    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
+    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+}
+elseif (GetLocale() == "ptBR") then
+lib.spec_table_localized = lib.spec_table_localized or {
+    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
+    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
+    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
+    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
+    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
+    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
+    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
+    ["MAGE"] = {"Arcane", "Fire", "Frost"},
+    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
+    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+}
+elseif (GetLocale() == "zhCN") then
+lib.spec_table_localized = lib.spec_table_localized or {
+    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
+    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
+    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
+    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
+    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
+    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
+    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
+    ["MAGE"] = {"Arcane", "Fire", "Frost"},
+    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
+    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+}
+elseif (GetLocale() == "zhTW") then
+lib.spec_table_localized = lib.spec_table_localized or {
+    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
+    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
+    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
+    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
+    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
+    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
+    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
+    ["MAGE"] = {"Arcane", "Fire", "Frost"},
+    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
+    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+}
+else -- enUS / enGB
+lib.spec_table_localized = lib.spec_table
+end
+
 -- TODO: talent IDs
--- TODO: localization?
+-- TODO: localization
 if (isWotlk) then
 lib.talents_table = lib.talents_table or {
     ["HUNTER"] = {
@@ -2171,6 +2305,7 @@ local f = lib.frame
 local cache = lib.cache
 local queue = lib.queue
 local spec_table = lib.spec_table
+local spec_table_localized = lib.spec_table_localized
 local talents_table = lib.talents_table
 local guildies = lib.guildies
 
@@ -2591,14 +2726,14 @@ end
 --     @boolean canInspect         - can target unit be inspected
 --
 function lib:CanInspect(unitorguid)
-    if (not unitorguid) then return false end
+    if ((not unitorguid) or InCombatLockdown()) then return false end
     local unit
     if (GUIDIsPlayer(unitorguid)) then
         unit = lib:PlayerGUIDToUnitToken(unitorguid)
     elseif (UnitIsPlayer(unitorguid)) then
         unit = unitorguid
     end
-    return unit and (not InCombatLockdown()) and UnitExists(unit) and UnitIsConnected(unit) and (not UnitIsDeadOrGhost(unit)) and (not UnitIsUnit(unit, "player")) and CheckInteractDistance(unit, 1) and (not InspectFrame or not InspectFrame:IsShown()) and CanInspect(unit, false)
+    return unit and UnitExists(unit) and UnitIsConnected(unit) and (not UnitIsDeadOrGhost(unit)) and (not UnitIsUnit(unit, "player")) and CheckInteractDistance(unit, 1) and (not InspectFrame or not InspectFrame:IsShown()) and CanInspect(unit, false)
 end
 
 
@@ -2668,21 +2803,22 @@ end
 
 
 --------------------------------------------------------------------------
--- ClassicInspector:GetSpecializationName(class, tabIndex)
+-- ClassicInspector:GetSpecializationName(class, tabIndex, localized)
 --
 --  Parameters
 --     @string class               - english class name in uppercase e.g. "WARRIOR"
 --     @number tabIndex            - talent tab index (1-3)
+--     @boolean localized          - return localized name instead of english name
 --
 --  Returns
 --     @string specName            - specialization name e.g. "Retribution"
 --
-function lib:GetSpecializationName(class, tabIndex)
+function lib:GetSpecializationName(class, tabIndex, localized)
     assert(class == "WARRIOR" or class == "PALADIN" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "SHAMAN" or 
            class == "MAGE" or class == "WARLOCK" or class == "DRUID" or (isWotlk and class == "DEATHKNIGHT"), "invalid class")
     local n = tonumber(tabIndex) or 0
     assert(n > 0 and n < 4, "tabIndex is not a valid number (1-3)")
-    return spec_table[class][tabIndex]
+    return localized and spec_table_localized[class][tabIndex] or spec_table[class][tabIndex]
 end
 
 
