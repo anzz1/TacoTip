@@ -29,15 +29,8 @@ local HORDE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-HORDE:16:16:-2:0:64:64:0
 local ALLIANCE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-ALLIANCE:16:16:-2:0:64:64:0:38:0:38|t"
 local PVP_FLAG_ICON = "|TInterface\\GossipFrame\\BattleMasterGossipIcon:0|t"
 
-local function resetCfg()
-    if (TacoTipDragButton) then
-        TacoTipDragButton:_Disable()
-    end
-    if (TacoTipConfig and TacoTipConfig.instant_fade) then
-        TT.frame:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
-        Detours:DetourUnhook(TT, GameTooltip, "FadeOut")
-    end
-    TacoTipConfig = {
+function TT:GetDefaults()
+    return {
         color_class = true,
         show_titles = true,
         show_guild_name = true,
@@ -51,7 +44,7 @@ local function resetCfg()
         hide_in_combat = false,
         show_item_level = true,
         tip_style = 2,
-        show_target = false,
+        show_target = true,
         show_pawn_player = false,
         show_team = false,
         show_pvp_icon = false,
@@ -70,10 +63,23 @@ local function resetCfg()
         character_gs_offset_y = 0,
         character_ilvl_offset_x = 0,
         character_ilvl_offset_y = 0,
-        unlock_info_position = false
+        unlock_info_position = false,
+        conf_version = addOnVersion,
+        show_achievement_points = false
         --custom_pos = nil,
         --custom_anchor = nil,
     }
+end
+
+local function resetCfg()
+    if (TacoTipDragButton) then
+        TacoTipDragButton:_Disable()
+    end
+    if (TacoTipConfig and TacoTipConfig.instant_fade) then
+        TT.frame:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
+        Detours:DetourUnhook(TT, GameTooltip, "FadeOut")
+    end
+    TacoTipConfig = TT:GetDefaults()
     if (PersonalGearScore) then
         PersonalGearScore:RefreshPosition()
     end
@@ -656,7 +662,16 @@ frame:SetScript("OnShow", function(frame)
         function(self, value)
             TacoTipConfig.anchor_mouse_spells = value
         end)
-    options.anchorMouseSpells:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -88)    
+    options.anchorMouseSpells:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -88)
+
+    options.showAchievementPoints = newCheckbox(
+        "ShowAchievementPoints",
+        L["Show Achievement Points"],
+        L["Show total achievement points in tooltips"],
+        function(self, value)
+            TacoTipConfig.show_achievement_points = value
+        end)
+    options.showAchievementPoints:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -116)      
 
 
     local styleText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -739,6 +754,7 @@ frame:SetScript("OnShow", function(frame)
         options.anchorMouseSpells:SetChecked(TacoTipConfig.anchor_mouse_spells)
         options.lockCharacterInfoPosition:SetChecked(not TacoTipConfig.unlock_info_position)
         options.lockCharacterInfoPosition:SetDisabled(not (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl))
+        options.showAchievementPoints:SetChecked(TacoTipConfig.show_achievement_points)
     end
 
     frame.Refresh = function()
