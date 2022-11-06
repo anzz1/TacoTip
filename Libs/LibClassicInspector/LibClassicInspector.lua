@@ -81,16 +81,16 @@ lib.spec_table = lib.spec_table or {
 -- TODO: localization
 if (GetLocale() == "deDE") then
 lib.spec_table_localized = lib.spec_table_localized or {
-    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
-    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
-    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
-    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
-    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
-    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
-    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
-    ["MAGE"] = {"Arcane", "Fire", "Frost"},
-    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
-    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+    ["WARRIOR"] = {"Waffen", "Furor", "Schutz"},
+    ["PALADIN"] = {"Heilig", "Schutz", "Vergeltung"},
+    ["HUNTER"] = {"Tierherrschaft", "Treffsicherheit", "Überleben"},
+    ["ROGUE"] = {"Meuchseln", "Kampf", "Täuschung"},
+    ["PRIEST"] = {"Disziplin", "Heilig", "Schatten"},
+    ["DEATHKNIGHT"] = {"Blut", "Frost", "Unheilig"},
+    ["SHAMAN"] = {"Elementar", "Verstärkung", "Wiederherstellung"},
+    ["MAGE"] = {"Arkan", "Feuer", "Frost"},
+    ["WARLOCK"] = {"Gebrechen", "Dämonologie", "Zerstörung"},
+    ["DRUID"] = {"Gleichgewicht", "Wildheit", "Wiederherstellung"}
 }
 elseif (GetLocale() == "esES") then
 lib.spec_table_localized = lib.spec_table_localized or {
