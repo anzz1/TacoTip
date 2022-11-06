@@ -95,6 +95,7 @@ TACOTIP_LOCALE = {
 ["Anchor spell tooltips to mouse cursor"] = "Anchor spell tooltips to mouse cursor",
 ["Show Achievement Points"] = "Show Achievement Points",
 ["Show total achievement points in tooltips"] = "Show total achievement points in tooltips",
+["Mover"] = "Mover",
 ["TEXT_OPT_DESC"] = "Better player tooltips - class colors, talents/specialization,\n     gearscore, guild ranks",
 ["TEXT_OPT_UBERTIPS"] = "Show enhanced tooltips for spells (\"UberTooltips\")",
 ["TEXT_HELP_MOVER_SHOWN"] = "Mover is shown. Drag the yellow dot to move the tooltip. Middle-Click to change anchor. Right-Click to save.",

@@ -601,7 +601,7 @@ frame:SetScript("OnShow", function(frame)
     options.customPosition:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -4)
 
     options.moverBtn = CreateFrame("Button", "TacoTipOptButtonMover", frame, "UIPanelButtonTemplate")
-    options.moverBtn:SetText("Mover")
+    options.moverBtn:SetText(L["Mover"])
     options.moverBtn:SetWidth(80)
     options.moverBtn:SetHeight(20)
     options.moverBtn:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 374, -5)
