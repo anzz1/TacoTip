@@ -2,12 +2,12 @@
 
     TacoTip Localization: deDE
 
-    Translators: 
+    Translators: shakimas (Shaktor, LakeshireEU)
 
 --]]
 
-if (GetLocale() ~= "deDE") then return 
-
+if (GetLocale() ~= "deDE") then return end
+TACOTIP_LOCALE = {
     ["Player"] = "Spieler",
     ["Pet"] = "Tier",
     ["Target"] = "Ziel",
@@ -60,7 +60,7 @@ if (GetLocale() ~= "deDE") then return
     ["Show Item Level"] = "Zeige das Itemlevel an",
     ["Display item level in the tooltip for certain items."] = "Zeige das Itemlevel im Tooltip für bestimmte Items an.",
     ["Show Item GearScore"] = "Zeige Item GearScore an",
-    ["Show GearScore in item tooltips"] = "Zeige GearScore in Item-Tooltips an"
+    ["Show GearScore in item tooltips"] = "Zeige GearScore in Item-Tooltips an",
     ["Fade out unit tooltips instantly"] = "Einheiten-Tooltips sofort verblassen",
     ["Custom Tooltip Position"] = "Eigene Tooltip-Position",
     ["Set a custom position for tooltips"] = "Lege eine eigene Tooltip-Position fest",
@@ -95,9 +95,4 @@ if (GetLocale() ~= "deDE") then return
     ["TEXT_HELP_MOVER_SAVED"] = "Eigene Tooltip-Position wurde gespeichert. Beweger ist nun versteckt. Tippe '/tacotip custom' um den Beweger erneut anzeigen zu lassen.",
     ["TEXT_HELP_ANCHOR"] = "Verwendung: /tacotip anchor ANKER. Gültige ANKER-Werte sind TOPLEFT/TOPRIGHT/BOTTOMLEFT/BOTTOMRIGHT/CENTER.",
     ["TEXT_DLG_CUSTOM_POS_CONFIRM"] = "\nMöchstest du deine eigene Tooltip-Position speichern, oder zurück zur Standardeinstellung wechseln?\n\n",
-  
-
-
-
-end
-
+}
