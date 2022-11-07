@@ -4,7 +4,7 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 3 (2022-10-21)
+    Version: 4 (2022-11-04)
 
 --]]
 
@@ -19,7 +19,7 @@ assert(LibStub, "LibClassicInspector requires LibStub")
 assert(LibStub:GetLibrary("CallbackHandler-1.0", true), "LibClassicInspector requires CallbackHandler-1.0")
 assert(LibStub:GetLibrary("LibDetours-1.0", true), "LibClassicInspector requires LibDetours-1.0")
 
-local lib, oldminor = LibStub:NewLibrary("LibClassicInspector", 3)
+local lib, oldminor = LibStub:NewLibrary("LibClassicInspector", 4)
 
 -- already loaded
 if (not lib) then
@@ -2341,7 +2341,7 @@ local function getCacheUser2(guid)
     local user = getCacheUser(guid)
     if (user) then
         local t = time()-INSPECTOR_REFRESH_DELAY
-        if ((not isClassic and user.talents.time < t) or user.inventory.time < t) then
+        if ((not isClassic and user.talents.time < t) or user.inventory.time < t or (isWotlk and user.achievements.time < t)) then
             lib:DoInspect(guid)
         end
     else
@@ -2350,7 +2350,7 @@ local function getCacheUser2(guid)
     return user
 end
 
-local function addCacheUser(guid, inventory, talents)
+local function addCacheUser(guid, inventory, talents, achievements)
     local user = {["guid"] = guid}
     if(inventory) then
         user.inventory = inventory
@@ -2362,6 +2362,11 @@ local function addCacheUser(guid, inventory, talents)
     else
         user.talents = {[1] = {[1] = {}, [2] = {}, [3] = {}}, [2] = {[1] = {}, [2] = {}, [3] = {}}, ["time"] = 0, ["active"] = 0}
     end
+    if(achievements) then
+        user.achievements = achievements
+    else
+        user.achievements = {["time"] = 0}
+    end    
     if (not cache.first) then
         cache.first = user
         cache.last = user
@@ -2403,7 +2408,7 @@ local function cacheUserInventory(unit)
     if(user) then
         user.inventory = inventory
     else
-        addCacheUser(guid, inventory, nil)
+        addCacheUser(guid, inventory, nil, nil)
     end
     -- Fire INVENTORY_READY(guid, isInspect[, unit]) callback
     lib.callbacks:Fire("INVENTORY_READY", guid, true, unit)
@@ -2426,38 +2431,65 @@ local function cacheUserTalents(unit)
     if(user) then
         user.talents = talents
     else
-        addCacheUser(guid, nil, talents)
+        addCacheUser(guid, nil, talents, nil)
     end
     -- Fire TALENTS_READY(guid, isInspect[, unit]) callback
     lib.callbacks:Fire("TALENTS_READY", guid, true, unit)
 end
 
+local function cacheUserAchievements(guid)
+    local achievements = {["time"] = time(), ["t_pts"] = GetComparisonAchievementPoints()}
+    local user = getCacheUser(guid)
+    if(user) then
+        user.achievements = achievements
+    else
+        addCacheUser(guid, nil, nil, achievements)
+    end
+end
 
 local function tryInspect(unit, refresh)
     if (lib:CanInspect(unit)) then
         local guid = UnitGUID(unit)
         local user = getCacheUser(guid)
+        local ret = false
         if (user) then
             if (refresh) then
                 local t = time()-INSPECTOR_REFRESH_DELAY
                 if ((not isClassic and user.talents.time < t) or user.inventory.time < t) then
                     NotifyInspect(unit)
-                    return true
+                    ret = true
+                end
+                if (isWotlk and user.achievements.time < t) then
+                    if (not AchievementFrame or not AchievementFrame.isComparison) then
+                        ClearAchievementComparisonUnit()
+                        SetAchievementComparisonUnit(unit)
+                        ret = true
+                    end
                 end
             else
                 if ((not isClassic and user.talents.time == 0) or user.inventory.time == 0) then
                     NotifyInspect(unit)
-                    return true
+                    ret = true
+                end
+                if (isWotlk and user.achievements.time == 0) then
+                    if (not AchievementFrame or not AchievementFrame.isComparison) then
+                        ClearAchievementComparisonUnit()
+                        SetAchievementComparisonUnit(unit)
+                        ret = true
+                    end
                 end
             end
         else
             NotifyInspect(unit)
+            if (isWotlk and (not AchievementFrame or not AchievementFrame.isComparison)) then
+                ClearAchievementComparisonUnit()
+                SetAchievementComparisonUnit(unit)
+            end
             return true
         end
     end
-    return false
+    return ret
 end
-
 
 function f:INSPECT_READY(event, guid)
     if (not guid) then 
@@ -2510,7 +2542,7 @@ function f:CHAT_MSG_ADDON(event, prefix, text, channelType, senderFullName, send
         if(user) then
             user.talents = talents
         else
-            addCacheUser(guid, nil, talents)
+            addCacheUser(guid, nil, talents, nil)
         end
         -- Fire TALENTS_READY(guid, isInspect[, unit]) callback
         lib.callbacks:Fire("TALENTS_READY", guid, false, nil)
@@ -2548,6 +2580,24 @@ end
 function f:ACTIVE_TALENT_GROUP_CHANGED()
     infoChanged = true
 end
+if (isWotlk) then
+function f:INSPECT_ACHIEVEMENT_READY(event, guid, ...)
+    if (guid and GUIDIsPlayer(guid)) then
+        cacheUserAchievements(guid)
+        -- Fire ACHIEVEMENTS_READY(guid, isInspect) callback
+        lib.callbacks:Fire("ACHIEVEMENTS_READY", guid, true)
+    end
+    if (AchievementFrame and AchievementFrame.isComparison and AchievementFrameComparison) then
+        AchievementFrameComparison_OnEvent(AchievementFrameComparison, event, guid, ...)
+    end
+end
+if (not AchievementFrame or not AchievementFrameComparison) then
+    AchievementFrame_LoadUI()
+end
+if (AchievementFrameComparison) then
+    AchievementFrameComparison:UnregisterEvent("INSPECT_ACHIEVEMENT_READY")
+end
+end
 
 f:SetScript("OnEvent", function(self, event, ...)
     return self[event](self, event, ...)
@@ -2564,6 +2614,7 @@ f:RegisterEvent("CHARACTER_POINTS_CHANGED")
 if (isWotlk) then
     f:RegisterEvent("PLAYER_TALENT_UPDATE")
     f:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+    f:RegisterEvent("INSPECT_ACHIEVEMENT_READY")
 end
 C_ChatInfo.RegisterAddonMessagePrefix(C_PREFIX)
 
@@ -2762,6 +2813,10 @@ function lib:DoInspect(unitorguid)
     if (lib:CanInspect(unit)) then
         if (time() >= nextInspectTime) then
             NotifyInspect(unit)
+            if (isWotlk and (not AchievementFrame or not AchievementFrame.isComparison)) then
+                ClearAchievementComparisonUnit()
+                SetAchievementComparisonUnit(unit)
+            end
             return 1
         else
             local c = #queue
@@ -3292,3 +3347,31 @@ function lib:PlayerGUIDToUnitToken(guid)
     return nil
 end
 
+
+--------------------------------------------------------------------------
+-- ClassicInspector:GetTotalAchievementPoints(unitorguid)
+--
+--  Parameters
+--     @string unitorguid          - unit token or guid
+--
+--  Returns
+--     @number total_points        - total achievement points
+--
+function lib:GetTotalAchievementPoints(unitorguid)
+    if (not isWotlk) then
+        return nil
+    end
+    local guid = getPlayerGUID(unitorguid)
+    if (not guid) then
+        return nil
+    end
+    if (guid == UnitGUID("player")) then
+        return GetTotalAchievementPoints()
+    else
+        local user = getCacheUser2(guid)
+        if (user and user.achievements.time > 0) then
+            return user.achievements["t_pts"]
+        end
+    end
+    return nil
+end

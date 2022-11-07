@@ -1,5 +1,6 @@
 
 local addOnName = ...
+local addOnVersion = GetAddOnMetadata(addOnName, "Version") or "0.0.1"
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
@@ -26,6 +27,7 @@ local isPawnLoaded = PawnClassicLastUpdatedVersion and PawnClassicLastUpdatedVer
 local HORDE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-HORDE:16:16:-2:0:64:64:0:38:0:38|t"
 local ALLIANCE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-ALLIANCE:16:16:-2:0:64:64:0:38:0:38|t"
 local PVP_FLAG_ICON = "|TInterface\\GossipFrame\\BattleMasterGossipIcon:0|t"
+local ACHIEVEMENT_ICON = "|TInterface\\AchievementFrame\\UI-Achievement-TinyShield:18:18:0:0:20:20:0:12.5:0:12.5|t"
 
 local POWERBAR_UPDATE_RATE = 0.2
 
@@ -265,6 +267,16 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
             end
             if (miniText ~= "") then
                 tinsert(linesToAdd, {miniText, 1, 1, 1})
+            end
+            if (CI:IsWotlk() and TacoTipConfig.show_achievement_points) then
+                local achi_pts = CI:GetTotalAchievementPoints(guid)
+                if (achi_pts) then
+                    if (wide_style) then
+                        tinsert(linesToAdd, {ACHIEVEMENT_ICON.." "..achi_pts, " ", 1, 1, 1, 1, 1, 1})
+                    else
+                        tinsert(linesToAdd, {ACHIEVEMENT_ICON.." "..achi_pts, 1, 1, 1})
+                    end
+                end
             end
         end
     end
@@ -732,6 +744,21 @@ local function onEvent(self, event, ...)
             if (CharacterModelFrame and PaperDollFrame) then
                 TT:RefreshCharacterFrame()
             end
+            local first_login = (TacoTipConfig.conf_version ~= addOnVersion)
+            if (first_login) then
+                for k,v in pairs(TT:GetDefaults()) do
+                    if (TacoTipConfig[k] == nil) then
+                        TacoTipConfig[k] = v
+                    end
+                end
+                TacoTipConfig.conf_version = addOnVersion
+            end
+            CAfter(3, function()
+                print("|cff59f0dcTacoTip v"..addOnVersion.." "..L["TEXT_HELP_WELCOME"])
+                if (first_login) then
+                    print("|cff59f0dcTacoTip:|r "..L["TEXT_HELP_FIRST_LOGIN"])
+                end
+            end)
         end
     elseif (event == "UPDATE_MOUSEOVER_UNIT") then
         if (GameTooltip:GetUnit()) then
