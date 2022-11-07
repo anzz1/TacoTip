@@ -83,7 +83,19 @@ if (GetLocale() ~= "deDE") then return
     ["Custom tooltip position enabled."] = "Eigene Tooltip-Position eingeschaltet.",
     ["Custom tooltip position disabled."] = "Eigene Tooltip-Position ausgeschaltet.",
     ["Custom position anchor set"] = "Eigene Anker-Position eingestellt",
-
+    ["Anchor to Mouse"] = "Anker bei Maus",
+    ["Anchor tooltips to mouse cursor"] = "Tooltips-Anker bei Mausposition festlegen",
+    ["Only in WorldFrame"] = "Nur in WeltFenster",
+    ["Anchor to mouse only in WorldFrame\nSkips raid / party frames"] = "Anker bei Mausposition nur in den WeltFenstern anzeigen\nLässt Raid- und Gruppenfenster aus",
+    ["Anchor Spells to Mouse"] = "Anker Spells bei Maus",
+    ["Anchor spell tooltips to mouse cursor"] = "Spell-Anker bei Mausposition festlegen",
+    ["TEXT_OPT_DESC"] = "Bessere Spieler-Tooltips - Klassenfarmen, Talente/Spezialisierungen,\n     gearscore, Gildenränge",
+    ["TEXT_OPT_UBERTIPS"] = "Zeige erweiterte Tooltips für Spells (\"UberTooltips\")",
+    ["TEXT_HELP_MOVER_SHOWN"] = "Beweger wird angezeigt. Ziehe den gelben Punkt, um den Tooltip bewegen zu können. Mit Mittel-Klick den Anker verschieben. Rechts-Klick zum speichern.",
+    ["TEXT_HELP_MOVER_SAVED"] = "Eigene Tooltip-Position wurde gespeichert. Beweger ist nun versteckt. Tippe '/tacotip custom' um den Beweger erneut anzeigen zu lassen.",
+    ["TEXT_HELP_ANCHOR"] = "Verwendung: /tacotip anchor ANKER. Gültige ANKER-Werte sind TOPLEFT/TOPRIGHT/BOTTOMLEFT/BOTTOMRIGHT/CENTER.",
+    ["TEXT_DLG_CUSTOM_POS_CONFIRM"] = "\nMöchstest du deine eigene Tooltip-Position speichern, oder zurück zur Standardeinstellung wechseln?\n\n",
+  
 
 
 
