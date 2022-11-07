@@ -61,6 +61,28 @@ if (GetLocale() ~= "deDE") then return
     ["Display item level in the tooltip for certain items."] = "Zeige das Itemlevel im Tooltip für bestimmte Items an.",
     ["Show Item GearScore"] = "Zeige Item GearScore an",
     ["Show GearScore in item tooltips"] = "Zeige GearScore in Item-Tooltips an"
+    ["Fade out unit tooltips instantly"] = "Einheiten-Tooltips sofort verblassen",
+    ["Custom Tooltip Position"] = "Eigene Tooltip-Position",
+    ["Set a custom position for tooltips"] = "Lege eine eigene Tooltip-Position fest",
+    ["Tooltip Style"] = "Tooltip Style",
+    ["FULL"] = "FULL",
+    ["Always FULL"] = "",
+    ["COMPACT/FULL"] = "KOMPAKT/VOLL",
+    ["Default COMPACT, hold SHIFT for FULL"] = "Standard KOMPAKT, halte SHIFT für VOLL",
+    ["COMPACT"] = "KOMPAKT",
+    ["Always COMPACT"] = "Immer KOMPAKT",
+    ["MINI/FULL"] = "MINI/VOLL",
+    ["Default MINI, hold SHIFT for FULL"] = "Standard MINI, halte SHIFT für FULL",
+    ["MINI"] = "MINI",
+    ["Always MINI"] = "Immer MINI",
+    ["Wide, Dual Spec, GearScore, Average iLvl"] = "Weit, Dual Spec, GearScore, Durchschnitt. iLvl",
+    ["Narrow, Active Spec, GearScore"] = "Schmal, Aktiver Spec, GearScore",
+    ["Narrow, Active Spec, GearScore, Average iLvl"] = "Schmal, Aktiver Spec, GearScore, Durchschnitt. iLvl",
+    ["Reset configuration"] = "Einstellungen zurücksetzen",
+    ["Configuration has been reset to default."] = "Die Einstellungen wurden zurückgesetzt.",
+    ["Custom tooltip position enabled."] = "Eigene Tooltip-Position eingeschaltet.",
+    ["Custom tooltip position disabled."] = "Eigene Tooltip-Position ausgeschaltet.",
+    ["Custom position anchor set"] = "Eigene Anker-Position eingestellt",
 
 
 
