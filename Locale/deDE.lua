@@ -2,7 +2,9 @@
 
     TacoTip Localization: deDE
 
-    Translators: shakimas (Shaktor, LakeshireEU)
+    Translators:
+
+      - shakimas (Shaktor, LakeshireEU)
 
 --]]
 

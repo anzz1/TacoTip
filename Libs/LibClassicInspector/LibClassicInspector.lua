@@ -4,7 +4,7 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 4 (2022-11-04)
+    Version: 5 (2022-11-07)
 
 --]]
 
@@ -19,7 +19,7 @@ assert(LibStub, "LibClassicInspector requires LibStub")
 assert(LibStub:GetLibrary("CallbackHandler-1.0", true), "LibClassicInspector requires CallbackHandler-1.0")
 assert(LibStub:GetLibrary("LibDetours-1.0", true), "LibClassicInspector requires LibDetours-1.0")
 
-local lib, oldminor = LibStub:NewLibrary("LibClassicInspector", 4)
+local lib, oldminor = LibStub:NewLibrary("LibClassicInspector", 5)
 
 -- already loaded
 if (not lib) then

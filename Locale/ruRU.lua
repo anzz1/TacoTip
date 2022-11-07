@@ -1,6 +1,11 @@
 --[[
+
     TacoTip Localization: ruRU
-    Translators: Iowerth (https://github.com/Iowerth)
+
+    Translators:
+
+      - Iowerth (https://github.com/Iowerth)
+
 --]]
 
 if (GetLocale() ~= "ruRU") then return end
