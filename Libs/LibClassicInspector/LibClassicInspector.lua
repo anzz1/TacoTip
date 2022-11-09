@@ -4,7 +4,7 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 5 (2022-11-07)
+    Version: 6 (2022-11-09)
 
 --]]
 
@@ -19,7 +19,7 @@ assert(LibStub, "LibClassicInspector requires LibStub")
 assert(LibStub:GetLibrary("CallbackHandler-1.0", true), "LibClassicInspector requires CallbackHandler-1.0")
 assert(LibStub:GetLibrary("LibDetours-1.0", true), "LibClassicInspector requires LibDetours-1.0")
 
-local lib, oldminor = LibStub:NewLibrary("LibClassicInspector", 5)
+local lib, oldminor = LibStub:NewLibrary("LibClassicInspector", 6)
 
 -- already loaded
 if (not lib) then
@@ -185,16 +185,16 @@ lib.spec_table_localized = lib.spec_table_localized or {
 }
 elseif (GetLocale() == "zhCN") then
 lib.spec_table_localized = lib.spec_table_localized or {
-    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
-    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
-    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
-    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
-    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
-    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
-    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
-    ["MAGE"] = {"Arcane", "Fire", "Frost"},
-    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
-    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+    ["WARRIOR"] = {"\230\173\166\229\153\168", "\231\139\130\230\128\146", "\233\152\178\230\138\164"},
+    ["PALADIN"] = {"\231\165\158\229\156\163", "\233\152\178\230\138\164", "\230\131\169\230\136\146"},
+    ["HUNTER"] = {"\233\135\142\229\133\189\230\142\167\229\136\182", "\229\176\132\229\135\187", "\231\148\159\229\173\152"},
+    ["ROGUE"] = {"\229\165\135\232\162\173", "\230\136\152\230\150\151", "\230\149\143\233\148\144"},
+    ["PRIEST"] = {"\230\136\146\229\190\139", "\231\165\158\229\156\163", "\230\154\151\229\189\177"},
+    ["DEATHKNIGHT"] = {"\233\178\156\232\161\128", "\229\134\176\233\156\156", "\233\130\170\230\129\182"},
+    ["SHAMAN"] = {"\229\133\131\231\180\160", "\229\162\158\229\188\186", "\230\129\162\229\164\141"},
+    ["MAGE"] = {"\229\165\165\230\156\175", "\231\129\171\231\132\176", "\229\134\176\233\156\156"},
+    ["WARLOCK"] = {"\231\151\155\232\139\166", "\230\129\182\233\173\148\229\173\166\232\175\134", "\230\175\129\231\129\173"},
+    ["DRUID"] = {"\229\185\179\232\161\161", "\233\135\142\230\128\167\230\136\152\230\150\151", "\230\129\162\229\164\141"}
 }
 elseif (GetLocale() == "zhTW") then
 lib.spec_table_localized = lib.spec_table_localized or {
