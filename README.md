@@ -44,3 +44,22 @@ Check out the API [here](https://github.com/anzz1/TacoTip/blob/master/Libs/LibCl
 Press ESC for Menu -> Addons -> Check: [X] Load out of date AddOns  
 
 ![out-of-date-addon-menu-small](https://user-images.githubusercontent.com/13628128/199223990-17896046-3407-472d-be70-b78fc42ae905.jpg)
+
+---
+
+***Translators***  
+🇩🇪 deDE: @shakimas (Shaktor, LakeshireEU) , @Nils89  
+🇪🇸 esES:   
+🇲🇽 esMX:   
+🇫🇷 frFR:   
+🇮🇹 itIT:    
+🇰🇷 koKR:    
+🇧🇷 ptBR:   
+🇷🇺 ruRU: @Iowerth  
+🇨🇳 zhCN: @yisisixu (云是红河岸 五区 碧空之歌)  
+🇹🇼 zhTW:   
+
+***Credits***  
+@Kisanen - help during development and testing  
+@nullKomplex - submitted a bugfix  
+@ForestJ316 - submitted a bugfix  
