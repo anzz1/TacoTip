@@ -64,8 +64,8 @@ function TT:GetDefaults()
         character_ilvl_offset_x = 0,
         character_ilvl_offset_y = 0,
         unlock_info_position = false,
-        conf_version = addOnVersion,
         show_achievement_points = false
+        --conf_version = addOnVersion,
         --custom_pos = nil,
         --custom_anchor = nil,
     }

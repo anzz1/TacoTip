@@ -4,9 +4,11 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 6 (2022-11-09)
+    Version: 7 (2022-11-18)
 
 --]]
+
+local LCI_VERSION = 7
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
@@ -19,7 +21,7 @@ assert(LibStub, "LibClassicInspector requires LibStub")
 assert(LibStub:GetLibrary("CallbackHandler-1.0", true), "LibClassicInspector requires CallbackHandler-1.0")
 assert(LibStub:GetLibrary("LibDetours-1.0", true), "LibClassicInspector requires LibDetours-1.0")
 
-local lib, oldminor = LibStub:NewLibrary("LibClassicInspector", 6)
+local lib, oldminor = LibStub:NewLibrary("LibClassicInspector", LCI_VERSION)
 
 -- already loaded
 if (not lib) then
@@ -146,16 +148,16 @@ lib.spec_table_localized = lib.spec_table_localized or {
 }
 elseif (GetLocale() == "koKR") then
 lib.spec_table_localized = lib.spec_table_localized or {
-    ["WARRIOR"] = {"Arms", "Fury", "Protection"},
-    ["PALADIN"] = {"Holy", "Protection", "Retribution"},
-    ["HUNTER"] = {"Beast Mastery", "Marksmanship", "Survival"},
-    ["ROGUE"] = {"Assassination", "Combat", "Subtlety"},
-    ["PRIEST"] = {"Discipline", "Holy", "Shadow"},
-    ["DEATHKNIGHT"] = {"Blood", "Frost", "Unholy"},
-    ["SHAMAN"] = {"Elemental", "Enhancement", "Restoration"},
-    ["MAGE"] = {"Arcane", "Fire", "Frost"},
-    ["WARLOCK"] = {"Affliction", "Demonology", "Destruction"},
-    ["DRUID"] = {"Balance", "Feral Combat", "Restoration"}
+    ["WARRIOR"] = {"\235\172\180\234\184\176", "\235\182\132\235\133\184", "\235\176\169\236\150\180"},
+    ["PALADIN"] = {"\236\139\160\236\132\177", "\235\179\180\237\152\184", "\236\167\149\235\178\140"},
+    ["HUNTER"] = {"\236\149\188\236\136\152", "\236\130\172\234\178\169", "\236\131\157\236\161\180"},
+    ["ROGUE"] = {"\236\149\148\236\130\180", "\236\160\132\237\136\172", "\236\158\160\237\150\137"},
+    ["PRIEST"] = {"\236\136\152\236\150\145", "\236\139\160\236\132\177", "\236\149\148\237\157\145"},
+    ["DEATHKNIGHT"] = {"\237\152\136\234\184\176", "\235\131\137\234\184\176", "\235\182\128\236\160\149"},
+    ["SHAMAN"] = {"\236\160\149\234\184\176", "\234\179\160\236\150\145", "\237\154\140\235\179\181"},
+    ["MAGE"] = {"\235\185\132\236\160\132", "\237\153\148\236\151\188", "\235\131\137\234\184\176"},
+    ["WARLOCK"] = {"\234\179\160\237\134\181", "\236\149\133\235\167\136", "\237\140\140\234\180\180"},
+    ["DRUID"] = {"\236\161\176\237\153\148", "\236\149\188\236\132\177", "\237\154\140\235\179\181"}
 }
 elseif (GetLocale() == "ruRU") then
 lib.spec_table_localized = lib.spec_table_localized or {
@@ -3374,4 +3376,15 @@ function lib:GetTotalAchievementPoints(unitorguid)
         end
     end
     return nil
+end
+
+
+--------------------------------------------------------------------------
+-- ClassicInspector:Version()
+--
+--  Returns
+--     @number version             - library version
+--
+function lib:Version()
+    return LCI_VERSION
 end
