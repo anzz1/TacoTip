@@ -1,12 +1,10 @@
+## Interface: 20504
 ## Version: 0.3.4
 ## Title: TacoTip
 ## Notes: TacoTip (GearScore & Talents)
 ## Author: kebabstorm
 ## SavedVariables: TacoTipConfig
 ## OptionalDependencies: LibStub, CallbackHandler-1.0, LibDetours-1.0, LibClassicInspector, LibClassicGearScore, Pawn
-## X-Min-Interface-Classic: 11304
-## X-Min-Interface-BCC: 20504
-## X-Min-Interface-Wrath: 30400
 
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
