@@ -52,8 +52,8 @@ Press ESC for Menu -> Addons -> Check: [X] Load out of date AddOns
 🇪🇸 esES:   
 🇲🇽 esMX:   
 🇫🇷 frFR:   
-🇮🇹 itIT:    
-🇰🇷 koKR:    
+🇮🇹 itIT:   
+🇰🇷 koKR: @wagerssi (와우하는아저씨)  
 🇧🇷 ptBR:   
 🇷🇺 ruRU: @Iowerth  
 🇨🇳 zhCN: @yisisixu (云是红河岸 五区 碧空之歌)  
