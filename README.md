@@ -49,7 +49,7 @@ Press ESC for Menu -> Addons -> Check: [X] Load out of date AddOns
 
 ***Translators***  
 🇩🇪 deDE: @shakimas (Shaktor, LakeshireEU) , @Nils89  
-🇪🇸 esES:   
+🇪🇸 esES: @Yorkylizado  
 🇲🇽 esMX:   
 🇫🇷 frFR:   
 🇮🇹 itIT:   
