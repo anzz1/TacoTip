@@ -63,3 +63,4 @@ Press ESC for Menu -> Addons -> Check: [X] Load out of date AddOns
 @Kisanen - help during development and testing  
 @nullKomplex - submitted a bugfix  
 @ForestJ316 - submitted a bugfix  
+@Oshiri - help during development and testing
