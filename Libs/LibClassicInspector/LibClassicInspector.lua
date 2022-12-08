@@ -534,13 +534,13 @@ lib.glyphs_table = lib.glyphs_table or {
       [29] = 70937  -- Glyph of Eternal Water
     },
     [2] = {
-      [1] = 52648, -- Glyph of the Penguin
-      [2] = 57924, -- Glyph of Arcane Intellect
-      [3] = 57925, -- Glyph of Slow Fall
-      [4] = 57926, -- Glyph of Fire Ward
-      [5] = 57927, -- Glyph of Frost Ward
-      [6] = 57928, -- Glyph of Frost Armor
-      [7] = 62126  -- Glyph of Blast Wave
+      [1] = 52648,  -- Glyph of the Penguin
+      [2] = 57924,  -- Glyph of Arcane Intellect
+      [3] = 57925,  -- Glyph of Slow Fall
+      [4] = 57926,  -- Glyph of Fire Ward
+      [5] = 57927,  -- Glyph of Frost Ward
+      [6] = 57928,  -- Glyph of Frost Armor
+      [7] = 62126   -- Glyph of Blast Wave
     },
   },
   ["WARLOCK"] = {
@@ -594,7 +594,7 @@ lib.glyphs_table = lib.glyphs_table or {
       [6] = 54810,  -- Glyph of Frenzied Regeneration
       [7] = 54811,  -- Glyph of Maul
       [8] = 54812,  -- Glyph of Growling
-      [9] = 54813, -- Glyph of Mangle
+      [9] = 54813,  -- Glyph of Mangle
       [10] = 54815, -- Glyph of Shred
       [11] = 54818, -- Glyph of Rip
       [12] = 54821, -- Glyph of Rake
