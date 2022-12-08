@@ -3887,7 +3887,7 @@ function lib:GetAchievementInfo(unitorguid, achievementID)
         return completed, month, day, year
     else
         local user = getCacheUser2(guid)
-        if (user and user.achievements.time > 0) then
+        if (user and user.achievements.time > 0 and user.achievements[id]) then
             return unpack(user.achievements[id])
         end
     end
