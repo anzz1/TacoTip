@@ -4,11 +4,11 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 8 (2022-12-08)
+    Version: 9 (2022-12-11)
 
 --]]
 
-local LCI_VERSION = 8
+local LCI_VERSION = 9
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
@@ -2884,6 +2884,18 @@ local function cacheUserAchievements(guid)
     end
 end
 
+local function tryCompare(unit)
+    if (AchievementFrameComparison) then
+        AchievementFrameComparison:UnregisterEvent("INSPECT_ACHIEVEMENT_READY")
+    end
+    if (not AchievementFrame or not AchievementFrame.isComparison) then
+        ClearAchievementComparisonUnit()
+        SetAchievementComparisonUnit(unit)
+        return true
+    end
+    return false
+end
+
 local function tryInspect(unit, refresh)
     if (lib:CanInspect(unit)) then
         local guid = UnitGUID(unit)
@@ -2897,9 +2909,7 @@ local function tryInspect(unit, refresh)
                     ret = true
                 end
                 if (isWotlk and user.achievements.time < t) then
-                    if (not AchievementFrame or not AchievementFrame.isComparison) then
-                        ClearAchievementComparisonUnit()
-                        SetAchievementComparisonUnit(unit)
+                    if (tryCompare(unit)) then
                         ret = true
                     end
                 end
@@ -2909,18 +2919,15 @@ local function tryInspect(unit, refresh)
                     ret = true
                 end
                 if (isWotlk and user.achievements.time == 0) then
-                    if (not AchievementFrame or not AchievementFrame.isComparison) then
-                        ClearAchievementComparisonUnit()
-                        SetAchievementComparisonUnit(unit)
+                    if (tryCompare(unit)) then
                         ret = true
                     end
                 end
             end
         else
             NotifyInspect(unit)
-            if (isWotlk and (not AchievementFrame or not AchievementFrame.isComparison)) then
-                ClearAchievementComparisonUnit()
-                SetAchievementComparisonUnit(unit)
+            if (isWotlk) then
+                tryCompare(unit)
             end
             return true
         end
@@ -3046,17 +3053,11 @@ function f:INSPECT_ACHIEVEMENT_READY(event, guid, ...)
     if (guid and GUIDIsPlayer(guid)) then
         cacheUserAchievements(guid)
         -- Fire ACHIEVEMENTS_READY(guid, isInspect) callback
-        lib.callbacks:Fire("ACHIEVEMENTS_READY", guid, true)
+        lib.callbacks:Fire("ACHIEVEMENTS_READY", guid, true, nil)
     end
     if (AchievementFrame and AchievementFrame.isComparison and AchievementFrameComparison) then
         AchievementFrameComparison_OnEvent(AchievementFrameComparison, event, guid, ...)
     end
-end
-if (not AchievementFrame or not AchievementFrameComparison) then
-    AchievementFrame_LoadUI()
-end
-if (AchievementFrameComparison) then
-    AchievementFrameComparison:UnregisterEvent("INSPECT_ACHIEVEMENT_READY")
 end
 end
 
@@ -3286,9 +3287,8 @@ function lib:DoInspect(unitorguid)
     if (lib:CanInspect(unit)) then
         if (GetTime() >= nextInspectTime) then
             NotifyInspect(unit)
-            if (isWotlk and (not AchievementFrame or not AchievementFrame.isComparison)) then
-                ClearAchievementComparisonUnit()
-                SetAchievementComparisonUnit(unit)
+            if (isWotlk) then
+                tryCompare(unit)
             end
             return 1
         else
@@ -3318,15 +3318,17 @@ end
 --     @string unitorguid          - unit token or guid
 --
 --  Returns
---     @number talentsCacheTime    - time when talents were last cached or 0 if not found
---     @number inventoryCacheTime  - time when inventory was last cached or 0 if not found
+--     @number talentsTime         - time when talents were last cached or 0 if not found
+--     @number inventoryTime       - time when inventory was last cached or 0 if not found
+--     @number achievementsTime    - time when achievements were last cached or 0 if not found
+--     @number glyphsTime          - time when glyphs were last cached or 0 if not found
 --
 function lib:GetLastCacheTime(unitorguid)
     local user = getCacheUser2(getPlayerGUID(unitorguid))
     if (user) then
-        return user.talents.time, user.inventory.time
+        return user.talents.time, user.inventory.time, user.achievements.time, user.glyphs.time
     end
-    return 0, 0
+    return 0, 0, 0, 0
 end
 
 
@@ -3966,7 +3968,7 @@ end
 --     @boolean enabled            - true if the socket has a glyph inserted
 --     @number glyphType           - type of glyph accepted by this socket (GLYPHTYPE_MAJOR=1 or GLYPHTYPE_MINOR=2)
 --     @number glyphSpellID        - spell ID of the socketed glyph
---     @number iconFile            - file ID of the sigil icon associated with the socketed glyph (currently not implemented for non-local players, returns 0)
+--     @number iconFile            - file ID of the sigil icon associated with the socketed glyph
 --
 function lib:GetGlyphSocketInfo(unitorguid, socketID, _group)
     if (not isWotlk) then
@@ -4078,7 +4080,7 @@ end
 
 
 --------------------------------------------------------------------------
--- ClassicInspector:GetGlyphs(unitorguid, _group)
+-- ClassicInspector:GetGlyphs(unitorguid[, group])
 --
 --  Parameters
 --     @string unitorguid          - unit token or guid
