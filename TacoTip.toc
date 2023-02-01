@@ -3,7 +3,7 @@
 ## Title: TacoTip
 ## Notes: TacoTip (GearScore & Talents)
 ## Author: kebabstorm
-## SavedVariables: TacoTipConfig
+## SavedVariables: TacoTipConfig, TacoTipDB
 ## OptionalDependencies: LibStub, CallbackHandler-1.0, LibDetours-1.0, LibClassicInspector, LibClassicGearScore, Pawn
 ## X-Min-Interface-Classic: 11304
 ## X-Min-Interface-BCC: 20504
