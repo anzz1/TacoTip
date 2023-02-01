@@ -767,6 +767,7 @@ local function onEvent(self, event, ...)
 
                 if (TT.db.profile.conf_version ~= addOnVersion) then
                     print("|cff59f0dcTacoTip:|r "..L["TEXT_HELP_FIRST_LOGIN"])
+                    TT.db.profile.conf_version = addOnVersion
                 end
             end)
         end
