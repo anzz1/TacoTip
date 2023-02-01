@@ -750,11 +750,6 @@ local function onEvent(self, event, ...)
                 TT.exampleTooltip:Show()
             end)
 
-            -- Temporary
-            InterfaceOptionsFrame_OpenToCategory(addOnName)
-            InterfaceOptionsFrame_OpenToCategory(addOnName)
-            -- Temporary
-
             if (TT.db.profile.custom_pos) then
                 TacoTip_CustomPosEnable(false)
             end
