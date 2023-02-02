@@ -313,20 +313,6 @@ TT.options = {
                         TT.db.profile.tip_style = value
                         TT.exampleTooltip:Refresh()
                     end
-                },
-                scale = {
-                    name = "Scale",
-                    type = "range",
-                    min = .5,
-                    max = 2,
-                    step = .1,
-                    get = function()
-                        return TT.db.profile.scale
-                    end,
-                    set = function(info, value)
-                        TT.db.profile.scale = value
-                        TT.exampleTooltip:Refresh()
-                    end
                 }
             }
         },
@@ -479,6 +465,20 @@ TT.options = {
                         TT.db.profile.anchor_mouse_spells = value
                     end
                 },
+                scale = {
+                    name = "Scale",
+                    type = "range",
+                    min = .5,
+                    max = 2,
+                    step = .1,
+                    get = function()
+                        return TT.db.profile.scale
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.scale = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                }
             }
         },
         extraFrame = {
