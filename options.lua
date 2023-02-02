@@ -28,9 +28,10 @@ local TT = _G[addOnName]
 local HORDE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-HORDE:16:16:-2:0:64:64:0:38:0:38|t"
 local ALLIANCE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-ALLIANCE:16:16:-2:0:64:64:0:38:0:38|t"
 local PVP_FLAG_ICON = "|TInterface\\GossipFrame\\BattleMasterGossipIcon:0|t"
+local ACHIEVEMENT_ICON = "|TInterface\\AchievementFrame\\UI-Achievement-TinyShield:18:18:0:0:20:20:0:12.5:0:12.5|t"
 
-function TT:GetDefaults()
-    return {
+TT.defaults = {
+    profile = {
         color_class = true,
         show_titles = true,
         show_guild_name = true,
@@ -52,6 +53,8 @@ function TT:GetDefaults()
         show_hp_bar = true,
         show_power_bar = false,
         instant_fade = false,
+        anchor_position = "1",
+        custom_pos = false,
         anchor_mouse = false,
         anchor_mouse_world = true,
         anchor_mouse_spells = false,
@@ -64,727 +67,664 @@ function TT:GetDefaults()
         character_ilvl_offset_x = 0,
         character_ilvl_offset_y = 0,
         unlock_info_position = false,
-        show_achievement_points = false
-        --conf_version = addOnVersion,
-        --custom_pos = nil,
-        --custom_anchor = nil,
+        show_achievement_points = false,
+        scale = 1
     }
-end
+}
 
-local function resetCfg()
-    if (TacoTipDragButton) then
-        TacoTipDragButton:_Disable()
-    end
-    if (TacoTipConfig and TacoTipConfig.instant_fade) then
-        TT.frame:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
-        Detours:DetourUnhook(TT, GameTooltip, "FadeOut")
-    end
-    TacoTipConfig = TT:GetDefaults()
-    if (PersonalGearScore) then
-        PersonalGearScore:RefreshPosition()
-    end
-    if (PersonalGearScoreText) then
-        PersonalGearScoreText:RefreshPosition()
-    end
-    if (PersonalAvgItemLvl) then
-        PersonalAvgItemLvl:RefreshPosition()
-    end
-    if (PersonalAvgItemLvlText) then
-        PersonalAvgItemLvlText:RefreshPosition()
-    end
-    if (InspectGearScore) then
-        InspectGearScore:RefreshPosition()
-    end
-    if (InspectGearScoreText) then
-        InspectGearScoreText:RefreshPosition()
-    end
-    if (InspectAvgItemLvl) then
-        InspectAvgItemLvl:RefreshPosition()
-    end
-    if (InspectAvgItemLvlText) then
-        InspectAvgItemLvlText:RefreshPosition()
-    end
-    if (TT.RefreshCharacterFrame and PaperDollFrame and PaperDollFrame:IsShown()) then
-        TT:RefreshCharacterFrame()
-    end
-    if (TT.RefreshInspectFrame and InspectFrame and InspectFrame:IsShown()) then
-        TT:RefreshInspectFrame()
-    end
-    --SetCVar("showItemLevel", "1")
-end
+TT.options = {
+    name = addOnName .. " v" .. addOnVersion,
+    type = "group",
+    inline = true,
+    order = 1,
+    args = {
+        description = {
+            name = L["TEXT_OPT_DESC"],
+            type = "description",
+            order = 1
+        },
+        unitTooltips = {
+            name = L["Unit Tooltips"],
+            type = "group",
+            order = 2,
+            inline = true,
+            args = {
+                useClassColors = {
+                    name = L["Class Color"],
+                    desc  = L["Color class names in tooltips"],
+                    type = "toggle",
+                    order = 1,
+                    get = function()
+                        return TT.db.profile.color_class
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.color_class = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                },
+                showTitles = {
+                    name = L["Title"],
+                    desc  = L["Show player's title in tooltips"],
+                    type = "toggle",
+                    order = 2,
+                    get = function()
+                        return TT.db.profile.show_titles
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_titles = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                },
+                showGuildNames = {
+                    name = L["Guild Name"],
+                    desc  = L["Show guild name in tooltips"],
+                    type = "toggle",
+                    order = 3,
+                    get = function()
+                        return TT.db.profile.show_guild_name
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_guild_name = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                },
+                showGuildRanks = {
+                    name = L["Guild Rank"],
+                    desc  = L["Show guild rank in tooltips"],
+                    type = "toggle",
+                    order = 4,
+                    get = function()
+                        return TT.db.profile.show_guild_rank
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_guild_rank = value
+                        TT.exampleTooltip:Refresh()
+                    end,
+                    hidden = function()
+                        return not TT.db.profile.show_guild_name
+                    end
+                },
+                guildRankStyle = {
+                    name = L["Guild Rank Style"],
+                    desc  = L["Show guild rank in tooltips"],
+                    type = "select",
+                    order = 5,
+                    values = function()
+                        return {
+                            ["one"] = L["RANK_OF_GUILD"],
+                            ["two"] = L["GUILD_RANK"]
+                        }
+                    end,
+                    get = function()
+                        return TT.db.profile.guild_rank_alt_style
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.guild_rank_alt_style = value
+                        TT.exampleTooltip:Refresh()
+                    end,
+                    hidden = function()
+                        return (not TT.db.profile.show_guild_rank) or (not TT.db.profile.show_guild_name)
+                    end
+                },
+                showTalents = {
+                    name = L["Talents"],
+                    desc  = L["Show talents and specialization in tooltips"],
+                    type = "toggle",
+                    order = 6,
+                    get = function()
+                        return TT.db.profile.show_talents
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_talents = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                },
+                showTarget = {
+                    name = L["Target"],
+                    desc  = L["Show unit's target in tooltips"],
+                    type = "toggle",
+                    order = 7,
+                    get = function()
+                        return TT.db.profile.show_target
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_target = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                },
+                gearScorePlayer = {
+                    name = L["GearScore"],
+                    desc  = L["Show player's GearScore in tooltips"],
+                    type = "toggle",
+                    order = 8,
+                    get = function()
+                        return TT.db.profile.show_gs_player
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_gs_player = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                },
+                pawnScorePlayer = {
+                    name = function()
+                        if isPawnLoaded then
+                            return L["PawnScore"]
+                        else
+                            return L["PawnScore"].." ("..L["requires Pawn"]..")"
+                        end
+                    end,
+                    desc  = L["Show player's GearScore in tooltips"],
+                    type = "toggle",
+                    order = 9,
+                    get = function()
+                        return TT.db.profile.show_pawn_player
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_pawn_player = value
+                        TT.exampleTooltip:Refresh()
+                    end,
+                    disabled = function()
+                        return not isPawnLoaded
+                    end
+                },
+                showTeam = {
+                    name = L["Faction Icon"],
+                    desc  = L["Show player's faction icon (Horde/Alliance) in tooltips"],
+                    type = "toggle",
+                    order = 10,
+                    get = function()
+                        return TT.db.profile.show_team
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_team = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                },
+                showPVPIcon = {
+                    name = L["PVP Icon"],
+                    desc  = L["Show player's pvp flag status as icon instead of text"],
+                    type = "toggle",
+                    order = 11,
+                    get = function()
+                        return TT.db.profile.show_pvp_icon
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_pvp_icon = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                },
+                showHealthBar = {
+                    name = L["Health Bar"],
+                    desc  = L["Show unit's health bar under tooltip"],
+                    type = "toggle",
+                    order = 12,
+                    get = function()
+                        return TT.db.profile.show_hp_bar
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_hp_bar = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                },
+                showPowerBar = {
+                    name = L["Power Bar"],
+                    desc  = L["Show unit's power bar under tooltip"],
+                    type = "toggle",
+                    order = 13,
+                    get = function()
+                        return TT.db.profile.show_power_bar
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_power_bar = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                },
+                showAchievementPoints = {
+                    name = L["Achievement Points"],
+                    desc  = L["Show total achievement points in tooltips"],
+                    type = "toggle",
+                    order = 14,
+                    get = function()
+                        return TT.db.profile.show_achievement_points
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_achievement_points = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                },
+                styleChoice = {
+                    name = L["Tooltip Style"],
+                    type = "select",
+                    order = 15,
+                    width = "double",
+                    values = function()
+                        return {
+                            [1] = L["Always FULL"],
+                            [2] = L["Default COMPACT, hold SHIFT for FULL"],
+                            [3] = L["Always COMPACT"],
+                            [4] = L["Default MINI, hold SHIFT for FULL"],
+                            [5] = L["Always MINI"]
+                        }
+                    end,
+                    get = function()
+                        return TT.db.profile.tip_style
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.tip_style = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                }
+            }
+        },
+        characterFrame = {
+            name = L["Character Frame"],
+            type = "group",
+            order = 3,
+            inline = true,
+            args = {
+                gearScoreCharacter = {
+                    name = L["GearScore"],
+                    desc  = L["Show GearScore in character frame"],
+                    type = "toggle",
+                    order = 1,
+                    get = function()
+                        return TT.db.profile.show_gs_character
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_gs_character = value
+                        if (PaperDollFrame and PaperDollFrame:IsShown()) then
+                            TT:RefreshCharacterFrame()
+                        end
+                        if (InspectFrame and InspectFrame:IsShown()) then
+                            TT:RefreshInspectFrame()
+                        end
+                    end
+                },
+                averageItemLevel = {
+                    name = L["Average iLvl"],
+                    desc  = L["Show Average Item Level in character frame"],
+                    type = "toggle",
+                    order = 2,
+                    get = function()
+                        return TT.db.profile.show_avg_ilvl
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_avg_ilvl = value
+                        if (PaperDollFrame and PaperDollFrame:IsShown()) then
+                            TT:RefreshCharacterFrame()
+                        end
+                        if (InspectFrame and InspectFrame:IsShown()) then
+                            TT:RefreshInspectFrame()
+                        end
+                    end
+                },
+                lockCharacterInfoPosition = {
+                    name = L["Lock Position"],
+                    desc  = L["Lock GearScore and Average Item Level positions in character frame"],
+                    type = "toggle",
+                    order = 3,
+                    get = function()
+                        return not TT.db.profile.unlock_info_position
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.unlock_info_position = not value
+                        if (PaperDollFrame and PaperDollFrame:IsShown()) then
+                            TT:RefreshCharacterFrame()
+                        end
+                        if (InspectFrame and InspectFrame:IsShown()) then
+                            TT:RefreshInspectFrame()
+                        end
+                    end
+                },
+            }
+        },
+        anchorFrame = {
+            name = L["Tooltip Position"],
+            type = "group",
+            order = 4,
+            inline = true,
+            args = {
+                anchorPosition = {
+                    name = "Anchor To",
+                    desc  = "",
+                    type = "select",
+                    order = 1,
+                    -- width = "double",
+                    values = function()
+                        return {
+                            ["1"] = L["Default"],
+                            ["2"] = L["Anchor to Mouse"],
+                            ["3"] = L["Custom Tooltip Position"],
+                        }
+                    end,
+                    get = function()
+                        return TT.db.profile.anchor_position
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.anchor_position = value
 
-if not TacoTipConfig then
-    resetCfg()
-end
+                        -- Anchor to Mouse
+                        if value == "2" then
+                            TT.db.profile.anchor_mouse = true
+                            if (TacoTipDragButton) then
+                                TacoTipDragButton:_Disable()
+                            end
+                            TT.db.profile.custom_pos = nil
+                            TT.db.profile.custom_anchor = nil
 
--- main frame
-local frame = CreateFrame("Frame","TacoTipOptions")
-frame.name = addOnName
-InterfaceOptions_AddCategory(frame)
-frame:Hide()
+                        -- Custom Tooltip Position
+                        elseif value == "3" then
+                            TT.db.profile.anchor_mouse = false
+                            TacoTip_CustomPosEnable(false)
 
-frame:SetScript("OnShow", function(frame)
-    local options = {}
-    local title = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    title:SetPoint("TOPLEFT", 16, -16)
-    title:SetText(addOnName .. " v" .. addOnVersion)
-
-    local description = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    description:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
-    description:SetText(L["TEXT_OPT_DESC"])
-
-    local function newCheckbox(name, label, description, onClick)
-        local check = CreateFrame("CheckButton", "TacoTipOptCheckBox" .. name, frame, "InterfaceOptionsCheckButtonTemplate")
-        check:SetScript("OnClick", function(self)
-            local tick = self:GetChecked()
-            onClick(self, tick and true or false)
-        end)
-        check.SetDisabled = function(self, disable)
-            if disable then
-                self:Disable()
-                _G[self:GetName() .. 'Text']:SetFontObject('GameFontDisable')
-            else
-                self:Enable()
-                _G[self:GetName() .. 'Text']:SetFontObject('GameFontHighlight')
-            end
-        end
-        check.label = _G[check:GetName() .. "Text"]
-        check.label:SetText(label)
-        if (description) then
-            check.tooltipText = label
-            check.tooltipRequirement = description
-        end
-        return check
-    end
-
-    local function newDropDown(name, values, callback)
-        local dropDown = CreateFrame("Frame", "TacoTipOptDropDown" .. name, frame, "UIDropDownMenuTemplate")
-        UIDropDownMenu_Initialize(dropDown, function(frame, level, menuList)
-            local info = UIDropDownMenu_CreateInfo()
-            info.func = function(self)
-                    UIDropDownMenu_SetSelectedValue(frame, self.value)
-                    callback(self.value)
-            end
-            for i,selection in ipairs(values) do
-                local text, desc = unpack(selection)
-                info.text, info.checked, info.value = text, false, i
-                if(desc) then
-                    info.tooltipTitle = text
-                    info.tooltipText = desc
-                    info.tooltipOnButton = 1
-                end
-                UIDropDownMenu_AddButton(info)
-            end
-        end)
-        dropDown.SetValue = function(self, value)
-            self.selectedValue = value
-            UIDropDownMenu_SetText(self, values[value][1])
-        end
-        return dropDown
-    end
-
-    local function newRadioButton(name, label, description, onClick)
-        local check = CreateFrame("CheckButton", "TacoTipOptRadioButton" .. name, frame, "InterfaceOptionsCheckButtonTemplate, UIRadioButtonTemplate")
-        check:SetScript("OnClick", function(self)
-            if(not self:GetChecked()) then
-                self:SetChecked(true)
-            end
-            onClick(self, true)
-        end)
-        check.SetDisabled = function(self, disable)
-            if disable then
-                self:Disable()
-                _G[self:GetName() .. 'Text']:SetFontObject('GameFontDisable')
-            else
-                self:Enable()
-                _G[self:GetName() .. 'Text']:SetFontObject('GameFontHighlight')
-            end
-        end
-        check.label = _G[check:GetName() .. "Text"]
-        check.label:SetText(label)
-        if (description) then
-            check.tooltipText = label
-            check.tooltipRequirement = description
-        end
-        return check
-    end
-
-
-    options.exampleTooltip = CreateFrame("GameTooltip", "TacoTipOptExampleTooltip", frame, "GameTooltipTemplate")
-    options.exampleTooltipHealthBar = CreateFrame("StatusBar", "TacoTipOptExampleTooltipStatusBar", options.exampleTooltip)
-    options.exampleTooltipHealthBar:SetSize(0, 8)
-    options.exampleTooltipHealthBar:SetPoint("TOPLEFT", options.exampleTooltip, "BOTTOMLEFT", 2, -1)
-    options.exampleTooltipHealthBar:SetPoint("TOPRIGHT", options.exampleTooltip, "BOTTOMRIGHT", -2, -1)
-    options.exampleTooltipHealthBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-TargetingFrame-BarFill")
-    options.exampleTooltipHealthBar:SetStatusBarColor(0, 1, 0)
-    options.exampleTooltipPowerBar = CreateFrame("StatusBar", "TacoTipOptExampleTooltipPowerBar", options.exampleTooltip)
-    options.exampleTooltipPowerBar:SetSize(0, 8)
-    options.exampleTooltipPowerBar:SetPoint("TOPLEFT", options.exampleTooltip, "BOTTOMLEFT", 2, -9)
-    options.exampleTooltipPowerBar:SetPoint("TOPRIGHT", options.exampleTooltip, "BOTTOMRIGHT", -2, -9)
-    options.exampleTooltipPowerBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-TargetingFrame-BarFill")
-    options.exampleTooltipPowerBar:SetStatusBarColor(1, 1, 0)
-    local function showExampleTooltip()
-        options.exampleTooltip:SetOwner(frame, "ANCHOR_NONE")
-        options.exampleTooltip:SetPoint("TOPLEFT", description, "TOPLEFT", 340, 0)
-        local classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)["ROGUE"]
-        local name_r = TacoTipConfig.color_class and classc and classc.r or 0
-        local name_g = TacoTipConfig.color_class and classc and classc.g or 0.6
-        local name_b = TacoTipConfig.color_class and classc and classc.b or 0.1
-        local title = TacoTipConfig.show_titles and L[" the Kingslayer"] or ""
-        options.exampleTooltip:AddLine(string.format("|cFF%02x%02x%02xKebabstorm%s %s%s|r", name_r*255, name_g*255, name_b*255, title, (TacoTipConfig.show_team and (HORDE_ICON.." ") or ""), (TacoTipConfig.show_pvp_icon and PVP_FLAG_ICON or "")))
-        if (TacoTipConfig.show_guild_name) then
-            if (TacoTipConfig.show_guild_rank) then
-                if (TacoTipConfig.guild_rank_alt_style) then
-                    options.exampleTooltip:AddLine("|cFF40FB40<Drunken Wrath> (Officer)|r")
-                else
-                    options.exampleTooltip:AddLine(string.format("|cFF40FB40"..L["FORMAT_GUILD_RANK_1"].."|r", "Officer", "Drunken Wrath"))
-                end
-            else
-                options.exampleTooltip:AddLine("|cFF40FB40<Drunken Wrath>|r")
-            end
-        end
-        if (TacoTipConfig.color_class) then
-            options.exampleTooltip:AddLine(string.format("%s 80 %s |cFF%02x%02x%02x%s|r (%s)", L["Level"], L["Undead"], name_r*255, name_g*255, name_b*255, LOCALIZED_CLASS_NAMES_MALE["ROGUE"], L["Player"]), 1, 1, 1)
-        else
-            options.exampleTooltip:AddLine(string.format("%s 80 %s %s (%s)", L["Level"], L["Undead"], LOCALIZED_CLASS_NAMES_MALE["ROGUE"], L["Player"]), 1, 1, 1)
-        end
-
-        if (not TacoTipConfig.show_pvp_icon) then
-            options.exampleTooltip:AddLine("PvP", 1, 1, 1)
-        end
-
-        local wide_style = (TacoTipConfig.tip_style == 1 or ((TacoTipConfig.tip_style == 2 or TacoTipConfig.tip_style == 4) and IsModifierKeyDown()))
-        local mini_style = (not wide_style and (TacoTipConfig.tip_style == 4 or TacoTipConfig.tip_style == 5))
-
-        if (TacoTipConfig.show_target) then
-            if (wide_style) then
-                options.exampleTooltip:AddDoubleLine(L["Target"]..":", L["None"], NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
-            else
-                options.exampleTooltip:AddLine(L["Target"]..": |cFF808080"..L["None"].."|r")
-            end
-        end
-        if (TacoTipConfig.show_talents) then
-            if (wide_style) then
-                options.exampleTooltip:AddDoubleLine(L["Talents"]..":", CI:GetSpecializationName("ROGUE", 1, true).." [51/18/2]", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
-                options.exampleTooltip:AddDoubleLine(" ", CI:GetSpecializationName("ROGUE", 3, true).." [14/3/54]", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
-            else
-                options.exampleTooltip:AddLine(L["Talents"]..":|cFFFFFFFF "..CI:GetSpecializationName("ROGUE", 1, true).." [51/18/2]")
-            end
-        end
-        local miniText = ""
-        if (TacoTipConfig.show_gs_player) then
-            local gs_r, gs_b, gs_g = GearScore:GetQuality(6054)
-            if (wide_style) then
-                options.exampleTooltip:AddDoubleLine("GearScore: 6054", "(iLvl: 264)", gs_r, gs_g, gs_b, gs_r, gs_g, gs_b)
-            elseif (mini_style) then
-                miniText = string.format("|cFF%02x%02x%02xGS: 6054  L: 264|r  ", gs_r*255, gs_g*255, gs_b*255)
-            else
-                options.exampleTooltip:AddLine("GearScore: 6054", gs_r, gs_g, gs_b)
-            end
-        end
-        if (isPawnLoaded and TacoTipConfig.show_pawn_player) then
-            local specColor = PawnGetScaleColor("\"Classic\":ROGUE1", true) or "|cffffffff"
-            if (wide_style) then
-                options.exampleTooltip:AddDoubleLine(string.format("Pawn: %s1234.56|r", specColor), string.format("%s(%s)|r", specColor, CI:GetSpecializationName("ROGUE", 1, true)), 1, 1, 1, 1, 1, 1)
-            elseif (mini_style) then
-                miniText = miniText .. string.format("P: %s1234.5|r", specColor)
-            else
-                options.exampleTooltip:AddLine(string.format("Pawn: %s1234.56 (%s)|r", specColor, CI:GetSpecializationName("ROGUE", 1, true)), 1, 1, 1)
-            end
-        end
-        if (miniText ~= "") then
-            options.exampleTooltip:AddLine(miniText, 1, 1, 1)
-        end
-        options.exampleTooltip:Show()
-        if (TacoTipConfig.show_hp_bar) then
-            options.exampleTooltipHealthBar:Show()
-            options.exampleTooltipPowerBar:SetPoint("TOPLEFT", options.exampleTooltip, "BOTTOMLEFT", 2, -9)
-            options.exampleTooltipPowerBar:SetPoint("TOPRIGHT", options.exampleTooltip, "BOTTOMRIGHT", -2, -9)
-        else
-            options.exampleTooltipHealthBar:Hide()
-            options.exampleTooltipPowerBar:SetPoint("TOPLEFT", options.exampleTooltip, "BOTTOMLEFT", 2, -1)
-            options.exampleTooltipPowerBar:SetPoint("TOPRIGHT", options.exampleTooltip, "BOTTOMRIGHT", -2, -1)
-        end
-        if (TacoTipConfig.show_power_bar) then
-            options.exampleTooltipPowerBar:Show()
-        else
-            options.exampleTooltipPowerBar:Hide()
-        end
-    end
-    options.exampleTooltip:SetScript("OnEvent", function() showExampleTooltip() end)
-
-
-    local generalText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    generalText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -18)
-    generalText:SetText(L["Unit Tooltips"])
-
-    options.useClassColors = newCheckbox(
-        "ClassColors",
-        L["Class Color"],
-        L["Color class names in tooltips"],
-        function(self, value) 
-            TacoTipConfig.color_class = value
-            showExampleTooltip()
-        end)
-    options.useClassColors:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", -2, -4)
-
-    options.showTitles = newCheckbox(
-        "ShowTitles",
-        L["Title"],
-        L["Show player's title in tooltips"],
-        function(self, value) 
-            TacoTipConfig.show_titles = value
-            showExampleTooltip()
-        end)
-    options.showTitles:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", 140, -4)
-
-    options.showGuildNames = newCheckbox(
-        "GuildNames",
-        L["Guild Name"],
-        L["Show guild name in tooltips"],
-        function(self, value) 
-            TacoTipConfig.show_guild_name = value
-            options.showGuildRanks:SetDisabled(not value)
-            if (value) then
-                options.guildRankStyle1:SetDisabled(not TacoTipConfig.show_guild_rank)
-                options.guildRankStyle2:SetDisabled(not TacoTipConfig.show_guild_rank)
-            else
-                options.guildRankStyle1:SetDisabled(true)
-                options.guildRankStyle2:SetDisabled(true)
-            end
-            showExampleTooltip()
-        end)
-    options.showGuildNames:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", -2, -32)
-
-    options.showGuildRanks = newCheckbox(
-        "GuildRanks",
-        L["Guild Rank"],
-        L["Show guild rank in tooltips"],
-        function(self, value) 
-            TacoTipConfig.show_guild_rank = value
-            options.guildRankStyle1:SetDisabled(not value)
-            options.guildRankStyle2:SetDisabled(not value)
-            showExampleTooltip()
-        end)
-    options.showGuildRanks:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", 140, -32)
-    options.showGuildRanks:SetHitRectInsets(0, -80, 0, 0)
-
-    options.guildRankStyle1 = newRadioButton(
-        "GuildRankStyle1",
-        L["Style"].." 1",
-        string.format(L["FORMAT_GUILD_RANK_1"], L["Rank"], L["Guild"]),
-        function(self, value)
-            options.guildRankStyle2:SetChecked(false)
-            TacoTipConfig.guild_rank_alt_style = false
-            showExampleTooltip()
-        end)
-    options.guildRankStyle1.label:SetText("1")
-    options.guildRankStyle1:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", 248, -36)
-    options.guildRankStyle1:SetHitRectInsets(0, -16, 0, 0)
-
-    options.guildRankStyle2 = newRadioButton(
-        "GuildRankStyle2",
-        L["Style"].." 2",
-        string.format("<%s> (%s)", L["Guild"], L["Rank"]),
-        function(self, value)
-            options.guildRankStyle1:SetChecked(false)
-            TacoTipConfig.guild_rank_alt_style = true
-            showExampleTooltip()
-        end)
-    options.guildRankStyle2.label:SetText("2")
-    options.guildRankStyle2:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", 280, -36)
-    options.guildRankStyle2:SetHitRectInsets(0, -16, 0, 0)
-
-    local rankstylehint = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    rankstylehint:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", 264, -23)
-    rankstylehint:SetText(L["Style"])
-
-    options.showTalents = newCheckbox(
-        "Talents",
-        L["Talents"],
-        L["Show talents and specialization in tooltips"],
-        function(self, value) 
-            TacoTipConfig.show_talents = value
-            showExampleTooltip()
-        end)
-    options.showTalents:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", -2, -60)
-
-    options.gearScorePlayer = newCheckbox(
-        "GearScorePlayer",
-        "GearScore",
-        L["Show player's GearScore in tooltips"],
-        function(self, value) 
-            TacoTipConfig.show_gs_player = value
-            showExampleTooltip()
-        end)
-    options.gearScorePlayer:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", 140, -60)
-
-    options.pawnScorePlayer = newCheckbox(
-        "PawnScorePlayer",
-        "PawnScore",
-        L["Show player's PawnScore in tooltips (may affect performance)"],
-        function(self, value) 
-            TacoTipConfig.show_pawn_player = value
-            showExampleTooltip()
-        end)
-    options.pawnScorePlayer:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", 140, -88)
-
-    options.showTarget = newCheckbox(
-        "ShowTarget",
-        L["Target"],
-        L["Show unit's target in tooltips"],
-        function(self, value) 
-            TacoTipConfig.show_target = value
-            showExampleTooltip()
-        end)
-    options.showTarget:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", -2, -88)
-
-    options.showTeam = newCheckbox(
-        "ShowTeam",
-        L["Faction Icon"],
-        L["Show player's faction icon (Horde/Alliance) in tooltips"],
-        function(self, value) 
-            TacoTipConfig.show_team = value
-            showExampleTooltip()
-        end)
-    options.showTeam:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", -2, -116)   
-
-    options.showPVPIcon = newCheckbox(
-        "ShowPVPIcon",
-        L["PVP Icon"],
-        L["Show player's pvp flag status as icon instead of text"],
-        function(self, value) 
-            TacoTipConfig.show_pvp_icon = value
-            showExampleTooltip()
-        end)
-    options.showPVPIcon:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", 140, -116)
-
-    options.showHealthBar = newCheckbox(
-        "ShowHealthBar",
-        L["Health Bar"],
-        L["Show unit's health bar under tooltip"],
-        function(self, value) 
-            TacoTipConfig.show_hp_bar = value
-            showExampleTooltip()
-        end)
-    options.showHealthBar:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", -2, -144)
-
-    options.showPowerBar = newCheckbox(
-        "ShowPowerBar",
-        L["Power Bar"],
-        L["Show unit's power bar under tooltip"],
-        function(self, value) 
-            TacoTipConfig.show_power_bar = value
-            showExampleTooltip()
-        end)
-    options.showPowerBar:SetPoint("TOPLEFT", generalText, "BOTTOMLEFT", 140, -144)
-
-
-    local characterFrameText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    characterFrameText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -216)
-    characterFrameText:SetText(L["Character Frame"])
-
-    options.gearScoreCharacter = newCheckbox(
-        "GearScoreCharacter",
-        "GearScore",
-        L["Show GearScore in character frame"],
-        function(self, value) 
-            TacoTipConfig.show_gs_character = value
-            if (PaperDollFrame and PaperDollFrame:IsShown()) then
-                TT:RefreshCharacterFrame()
-            end
-            if (InspectFrame and InspectFrame:IsShown()) then
-                TT:RefreshInspectFrame()
-            end
-        end)
-    options.gearScoreCharacter:SetPoint("TOPLEFT", characterFrameText, "BOTTOMLEFT", -2, -4)
-
-    options.averageItemLevel = newCheckbox(
-        "AverageItemLevel",
-        L["Average iLvl"],
-        L["Show Average Item Level in character frame"],
-        function(self, value) 
-            TacoTipConfig.show_avg_ilvl = value
-            if (PaperDollFrame and PaperDollFrame:IsShown()) then
-                TT:RefreshCharacterFrame()
-            end
-            if (InspectFrame and InspectFrame:IsShown()) then
-                TT:RefreshInspectFrame()
-            end
-        end)
-    options.averageItemLevel:SetPoint("TOPLEFT", characterFrameText, "BOTTOMLEFT", 140, -4)
-
-    options.lockCharacterInfoPosition = newCheckbox(
-        "LockCharacterInfoPosition",
-        L["Lock Position"],
-        L["Lock GearScore and Average Item Level positions in character frame"],
-        function(self, value)
-            TacoTipConfig.unlock_info_position = not value
-            if (PaperDollFrame and PaperDollFrame:IsShown()) then
-                TT:RefreshCharacterFrame()
-            end
-            if (InspectFrame and InspectFrame:IsShown()) then
-                TT:RefreshInspectFrame()
-            end
-        end)
-    options.lockCharacterInfoPosition:SetPoint("TOPLEFT", characterFrameText, "BOTTOMLEFT", -2, -32)    
-
-
-    local extraText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    extraText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -302)
-    extraText:SetText(L["Extra"])
-
-    options.showItemLevel = newCheckbox(
-        "ShowItemLevel",
-        L["Show Item Level"],
-        L["Display item level in the tooltip for certain items."],
-        function(self, value) 
-            TacoTipConfig.show_item_level = value
-        end)
-    options.showItemLevel:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -4)  
-
-    options.gearScoreItems = newCheckbox(
-        "GearScoreItems",
-        L["Show Item GearScore"],
-        L["Show GearScore in item tooltips"],
-        function(self, value) 
-            TacoTipConfig.show_gs_items = value
-        end)
-    options.gearScoreItems:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -32)
-
-    options.uberTips = newCheckbox(
-        "UberTips",
-        L["Enhanced Tooltips"],
-        L["TEXT_OPT_UBERTIPS"],
-        function(self, value) 
-            SetCVar("UberTooltips", value and "1" or "0")
-        end)
-    options.uberTips:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -60)
-
-    options.hideInCombat = newCheckbox(
-        "HideInCombat",
-        L["Disable In Combat"],
-        L["Disable gearscore & talents in combat"],
-        function(self, value) 
-            TacoTipConfig.hide_in_combat = value
-        end)
-    options.hideInCombat:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -88)
-
-    options.chatClassColors = newCheckbox(
-        "ChatClassColors",
-        L["Chat Class Colors"],
-        L["Color names by class in chat windows"],
-        function(self, value) 
-            SetCVar("chatClassColorOverride", value and "0" or "1")
-        end)
-    options.chatClassColors:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -116) 
-
-    options.customPosition = newCheckbox(
-        "CustomPosition",
-        L["Custom Tooltip Position"],
-        L["Set a custom position for tooltips"],
-        function(self, value)
-            options.anchorMouse:SetDisabled(value)
-            if (value) then
-                TacoTipConfig.anchor_mouse = false
-                options.moverBtn:SetEnabled(true)
-                TacoTip_CustomPosEnable(false)
-            else
-                options.moverBtn:SetEnabled(false)
-                if (TacoTipDragButton) then
-                    TacoTipDragButton:_Disable()
-                end
-                TacoTipConfig.custom_pos = nil
-                TacoTipConfig.custom_anchor = nil
-            end
-        end)
-    options.customPosition:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -4)
-
-    options.moverBtn = CreateFrame("Button", "TacoTipOptButtonMover", frame, "UIPanelButtonTemplate")
-    options.moverBtn:SetText(L["Mover"])
-    options.moverBtn:SetWidth(80)
-    options.moverBtn:SetHeight(20)
-    options.moverBtn:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 374, -5)
-    options.moverBtn:SetScript("OnClick", function()
-        TacoTip_CustomPosEnable(true)
-    end)
-
-    options.anchorMouse = newCheckbox(
-        "AnchorMouse",
-        L["Anchor to Mouse"],
-        L["Anchor tooltips to mouse cursor"],
-        function(self, value)
-            options.anchorMouseWorld:SetDisabled(not value)
-            options.customPosition:SetDisabled(value)
-            TacoTipConfig.anchor_mouse = value
-            if (value) then
-                options.moverBtn:SetEnabled(false)
-                if (TacoTipDragButton) then
-                    TacoTipDragButton:_Disable()
-                end
-                TacoTipConfig.custom_pos = nil
-                TacoTipConfig.custom_anchor = nil
-            end
-        end)
-    options.anchorMouse:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -32)
-
-    options.anchorMouseWorld = newCheckbox(
-        "AnchorMouseWorld",
-        L["Only in WorldFrame"],
-        L["Anchor to mouse only in WorldFrame\nSkips raid / party frames"],
-        function(self, value)
-            TacoTipConfig.anchor_mouse_world = value
-        end)
-    options.anchorMouseWorld:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 374, -32)
-
-    options.instantFade = newCheckbox(
-        "InstantFade",
-        L["Instant Fade"],
-        L["Fade out unit tooltips instantly"],
-        function(self, value) 
-            TacoTipConfig.instant_fade = value
-            if (value) then
-                TT.frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
-                Detours:DetourHook(TT, GameTooltip, "FadeOut", function(self)
-                    self:Hide()
-                end)
-            else
-                TT.frame:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
-                Detours:DetourUnhook(TT, GameTooltip, "FadeOut")
-            end
-        end)
-    options.instantFade:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -60)
-
-    options.anchorMouseSpells = newCheckbox(
-        "AnchorMouseSpells",
-        L["Anchor Spells to Mouse"],
-        L["Anchor spell tooltips to mouse cursor"],
-        function(self, value)
-            TacoTipConfig.anchor_mouse_spells = value
-        end)
-    options.anchorMouseSpells:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -88)
-
-    options.showAchievementPoints = newCheckbox(
-        "ShowAchievementPoints",
-        L["Show Achievement Points"],
-        L["Show total achievement points in tooltips"],
-        function(self, value)
-            TacoTipConfig.show_achievement_points = value
-        end)
-    options.showAchievementPoints:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 188, -116)      
-
-
-    local styleText = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    styleText:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 341, -154)
-    styleText:SetText(L["Tooltip Style"])
-
-    local dropdown_values = {
-        {L["FULL"], L["Always FULL"]},
-        {L["COMPACT/FULL"], L["Default COMPACT, hold SHIFT for FULL"]},
-        {L["COMPACT"], L["Always COMPACT"]},
-        {L["MINI/FULL"], L["Default MINI, hold SHIFT for FULL"]},
-        {L["MINI"], L["Always MINI"]}
+                        -- Default
+                        else
+                            if (TacoTipDragButton) then
+                                TacoTipDragButton:_Disable()
+                            end
+                            TT.db.profile.custom_pos = nil
+                            TT.db.profile.custom_anchor = nil
+                        end
+                    end
+                },
+                anchorMouseWorld = {
+                    name = L["Only in WorldFrame"],
+                    desc  = L["Anchor to mouse only in WorldFrame\nSkips raid / party frames"],
+                    type = "toggle",
+                    order = 2,
+                    get = function()
+                        return TT.db.profile.anchor_mouse_world
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.anchor_mouse_world = value
+                    end,
+                    hidden = function()
+                        return TT.db.profile.anchor_position ~= "2"
+                    end
+                },
+                moverButton = {
+                    name = L["Mover"],
+                    type = "execute",
+                    order = 3,
+                    func = function()
+                        TacoTip_CustomPosEnable(true)
+                    end,
+                    hidden = function()
+                        return TT.db.profile.anchor_position ~= "3"
+                    end
+                },
+                anchorMouseSpells = {
+                    name = L["Anchor Spells to Mouse"],
+                    desc  = L["Anchor spell tooltips to mouse cursor"],
+                    type = "toggle",
+                    order = 4,
+                    get = function()
+                        return TT.db.profile.anchor_mouse_spells
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.anchor_mouse_spells = value
+                    end
+                },
+                scale = {
+                    name = "Scale",
+                    type = "range",
+                    min = .5,
+                    max = 2,
+                    step = .1,
+                    get = function()
+                        return TT.db.profile.scale
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.scale = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                }
+            }
+        },
+        extraFrame = {
+            name = L["Extra"],
+            type = "group",
+            order = 5,
+            inline = true,
+            args = {
+                showItemLevel = {
+                    name = L["Show Item Level"],
+                    desc  = L["Display item level in the tooltip for certain items."],
+                    type = "toggle",
+                    order = 1,
+                    get = function()
+                        return TT.db.profile.show_item_level
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_item_level = value
+                    end
+                },
+                gearScoreItems = {
+                    name = L["Show Item GearScore"],
+                    desc  = L["Show GearScore in item tooltips"],
+                    type = "toggle",
+                    order = 2,
+                    get = function()
+                        return TT.db.profile.show_gs_items
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.show_gs_items = value
+                    end
+                },
+                uberTips = {
+                    name = L["Enhanced Tooltips"],
+                    desc  = L["TEXT_OPT_UBERTIPS"],
+                    type = "toggle",
+                    order = 3,
+                    get = function()
+                        return GetCVar("UberTooltips") == "1"
+                    end,
+                    set = function(info, value)
+                        if value == true then
+                            SetCVar("UberTooltips", "1")
+                        else
+                            SetCVar("UberTooltips", "0")
+                        end
+                    end
+                },
+                hideInCombat = {
+                    name = L["Disable In Combat"],
+                    desc  = L["Disable gearscore & talents in combat"],
+                    type = "toggle",
+                    order = 4,
+                    get = function()
+                        return TT.db.profile.hide_in_combat
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.hide_in_combat = value
+                    end
+                },
+                chatClassColors = {
+                    name = L["Chat Class Colors"],
+                    desc  = L["Color names by class in chat windows"],
+                    type = "toggle",
+                    order = 5,
+                    get = function()
+                        return GetCVar("chatClassColorOverride") == "1"
+                    end,
+                    set = function(info, value)
+                        if value == true then
+                            SetCVar("chatClassColorOverride", "1")
+                        else
+                            SetCVar("chatClassColorOverride", "0")
+                        end
+                    end
+                },
+                instantFade = {
+                    name = L["Instant Fade"],
+                    desc  = L["Fade out unit tooltips instantly"],
+                    type = "toggle",
+                    order = 6,
+                    get = function()
+                        return TT.db.profile.instant_fade
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.instant_fade = value
+                        if (value) then
+                            TT.frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
+                            Detours:DetourHook(TT, GameTooltip, "FadeOut", function(self)
+                                self:Hide()
+                            end)
+                        else
+                            TT.frame:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
+                            Detours:DetourUnhook(TT, GameTooltip, "FadeOut")
+                        end
+                    end
+                }
+            }
+        }
     }
-    options.styleChoice = newDropDown(
-        "StyleChoice",
-        dropdown_values,
-        function(value)
-            TacoTipConfig.tip_style = value
-            showExampleTooltip()
-        end)
-    options.styleChoice:SetPoint("TOPLEFT", styleText, "BOTTOMLEFT", -20, -4)
-    options.styleChoice:SetValue(TacoTipConfig.tip_style)
+}
 
-    local althint1 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    althint1:SetPoint("TOPLEFT", styleText, "BOTTOMLEFT", -61, -48)
-    althint1:SetText(L["FULL"])
-    local althint2 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    althint2:SetPoint("TOPLEFT", althint1, "BOTTOMLEFT", 0, 0)
-    althint2:SetText(L["COMPACT"])
-    local althint3 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    althint3:SetPoint("TOPLEFT", althint2, "BOTTOMLEFT", 0, 0)
-    althint3:SetText(L["MINI"])
-    local althint4 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    althint4:SetPoint("TOPLEFT", styleText, "BOTTOMLEFT", 3, -48)
-    althint4:SetText(L["Wide, Dual Spec, GearScore, Average iLvl"])
-    local althint5 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    althint5:SetPoint("TOPLEFT", althint4, "BOTTOMLEFT", 0, 0)
-    althint5:SetText(L["Narrow, Active Spec, GearScore"])
-    local althint6 = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    althint6:SetPoint("TOPLEFT", althint5, "BOTTOMLEFT", 0, 0)
-    althint6:SetText(L["Narrow, Active Spec, GearScore, Average iLvl"])
+-- Example Tooltip Class
+TT.exampleTooltip = {}
 
+-- Create the Example Tooltip
+function TT.exampleTooltip:Create()
+    if not self.tooltip then
+        self.tooltip = CreateFrame("GameTooltip", "TacoTipOptExampleTooltip", TT.optionsFrame, "GameTooltipTemplate")
+        self.tooltipHealthBar = CreateFrame("StatusBar", "TacoTipOptExampleTooltipStatusBar", self.tooltip)
+        self.tooltipHealthBar:SetSize(0, 8)
+        self.tooltipHealthBar:SetPoint("TOPLEFT", self.tooltip, "BOTTOMLEFT", 2, -1)
+        self.tooltipHealthBar:SetPoint("TOPRIGHT", self.tooltip, "BOTTOMRIGHT", -2, -1)
+        self.tooltipHealthBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-TargetingFrame-BarFill")
+        self.tooltipHealthBar:SetStatusBarColor(0, 1, 0)
+        self.tooltipPowerBar = CreateFrame("StatusBar", "TacoTipOptExampleTooltipPowerBar", self.tooltip)
+        self.tooltipPowerBar:SetSize(0, 8)
+        self.tooltipPowerBar:SetPoint("TOPLEFT", self.tooltip, "BOTTOMLEFT", 2, -9)
+        self.tooltipPowerBar:SetPoint("TOPRIGHT", self.tooltip, "BOTTOMRIGHT", -2, -9)
+        self.tooltipPowerBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-TargetingFrame-BarFill")
+        self.tooltipPowerBar:SetStatusBarColor(1, 1, 0)
+    end
+end
 
-    local function getConfig()
-        options.useClassColors:SetChecked(TacoTipConfig.color_class)
-        options.showTitles:SetChecked(TacoTipConfig.show_titles)
-        options.showGuildNames:SetChecked(TacoTipConfig.show_guild_name)
-        options.showGuildRanks:SetChecked(TacoTipConfig.show_guild_rank)
-        options.showTalents:SetChecked(TacoTipConfig.show_talents)
-        options.gearScorePlayer:SetChecked(TacoTipConfig.show_gs_player)
-        options.gearScoreCharacter:SetChecked(TacoTipConfig.show_gs_character)
-        options.gearScoreItems:SetChecked(TacoTipConfig.show_gs_items)
-        options.averageItemLevel:SetChecked(TacoTipConfig.show_avg_ilvl)
-        options.showItemLevel:SetChecked(TacoTipConfig.show_item_level)
-        options.hideInCombat:SetChecked(TacoTipConfig.hide_in_combat)
-        options.uberTips:SetChecked(GetCVar("UberTooltips") == "1")
-        options.showTarget:SetChecked(TacoTipConfig.show_target)
-        options.styleChoice:SetValue(TacoTipConfig.tip_style)
-        options.showGuildRanks:SetDisabled(not TacoTipConfig.show_guild_name)
-        options.customPosition:SetChecked(TacoTipConfig.custom_pos and true or false)
-        options.customPosition:SetDisabled(TacoTipConfig.anchor_mouse)
-        options.moverBtn:SetEnabled(TacoTipConfig.custom_pos and true or false)
-        options.pawnScorePlayer:SetDisabled(not isPawnLoaded)
-        options.pawnScorePlayer:SetChecked(TacoTipConfig.show_pawn_player)
-        options.pawnScorePlayer.label:SetText(isPawnLoaded and "PawnScore" or "PawnScore ("..L["requires Pawn"]..")")
-        options.showTeam:SetChecked(TacoTipConfig.show_team)
-        options.showPVPIcon:SetChecked(TacoTipConfig.show_pvp_icon)
-        options.guildRankStyle1:SetChecked(not TacoTipConfig.guild_rank_alt_style)
-        options.guildRankStyle2:SetChecked(TacoTipConfig.guild_rank_alt_style)
-        options.guildRankStyle1:SetDisabled(not TacoTipConfig.show_guild_rank)
-        options.guildRankStyle2:SetDisabled(not TacoTipConfig.show_guild_rank)
-        options.showHealthBar:SetChecked(TacoTipConfig.show_hp_bar)
-        options.showPowerBar:SetChecked(TacoTipConfig.show_power_bar)
-        options.instantFade:SetChecked(TacoTipConfig.instant_fade)
-        options.chatClassColors:SetChecked(GetCVar("chatClassColorOverride") == "0")
-        options.anchorMouse:SetChecked(TacoTipConfig.anchor_mouse)
-        options.anchorMouse:SetDisabled(TacoTipConfig.custom_pos and true or false)
-        options.anchorMouseWorld:SetChecked(TacoTipConfig.anchor_mouse_world)
-        options.anchorMouseWorld:SetDisabled(not TacoTipConfig.anchor_mouse)
-        options.anchorMouseSpells:SetChecked(TacoTipConfig.anchor_mouse_spells)
-        options.lockCharacterInfoPosition:SetChecked(not TacoTipConfig.unlock_info_position)
-        options.lockCharacterInfoPosition:SetDisabled(not (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl))
-        options.showAchievementPoints:SetChecked(TacoTipConfig.show_achievement_points)
+-- Refresh the Example Tooltip content
+function TT.exampleTooltip:Refresh()
+    self.tooltip:SetScale(TT.db.profile.scale)
+
+    self.tooltip:ClearLines()
+
+    local classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)["ROGUE"]
+    local name_r = TT.db.profile.color_class and classc and classc.r or 0
+    local name_g = TT.db.profile.color_class and classc and classc.g or 0.6
+    local name_b = TT.db.profile.color_class and classc and classc.b or 0.1
+    local title = TT.db.profile.show_titles and L[" the Kingslayer"] or ""
+
+    self.tooltip:AddLine(string.format("|cFF%02x%02x%02xKebabstorm%s %s%s|r", name_r*255, name_g*255, name_b*255, title, (TT.db.profile.show_team and (HORDE_ICON.." ") or ""), (TT.db.profile.show_pvp_icon and PVP_FLAG_ICON or "")))
+
+    if (TT.db.profile.show_guild_name) then
+        if (TT.db.profile.show_guild_rank) then
+            if (TT.db.profile.guild_rank_alt_style) then
+                self.tooltip:AddLine("|cFF40FB40<Drunken Wrath> (Officer)|r")
+            else
+                self.tooltip:AddLine(string.format("|cFF40FB40"..L["FORMAT_GUILD_RANK_1"].."|r", "Officer", "Drunken Wrath"))
+            end
+        else
+            self.tooltip:AddLine("|cFF40FB40<Drunken Wrath>|r")
+        end
     end
 
-    frame.Refresh = function()
-        getConfig()
-        showExampleTooltip()
+    if (TT.db.profile.color_class) then
+        self.tooltip:AddLine(string.format("%s 80 %s |cFF%02x%02x%02x%s|r (%s)", L["Level"], L["Undead"], name_r*255, name_g*255, name_b*255, LOCALIZED_CLASS_NAMES_MALE["ROGUE"], L["Player"]), 1, 1, 1)
+    else
+        self.tooltip:AddLine(string.format("%s 80 %s %s (%s)", L["Level"], L["Undead"], LOCALIZED_CLASS_NAMES_MALE["ROGUE"], L["Player"]), 1, 1, 1)
     end
 
-    local resetcfg = CreateFrame("Button", "TacoTipOptButtonResetCfg", frame, "UIPanelButtonTemplate")
-    resetcfg:SetText(L["Reset configuration"])
-    resetcfg:SetWidth(177)
-    resetcfg:SetHeight(24)
-    resetcfg:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 0, -152)
-    resetcfg:SetScript("OnClick", function()
-        resetCfg()
-        frame:Refresh()
-    end)
+    if (not TT.db.profile.show_pvp_icon) then
+        self.tooltip:AddLine("PvP", 1, 1, 1)
+    end
 
-    getConfig()
-    options.exampleTooltip:RegisterEvent("MODIFIER_STATE_CHANGED")
-    showExampleTooltip()
+    local wide_style = (TT.db.profile.tip_style == 1 or ((TT.db.profile.tip_style == 2 or TT.db.profile.tip_style == 4) and IsModifierKeyDown()))
+    local mini_style = (not wide_style and (TT.db.profile.tip_style == 4 or TT.db.profile.tip_style == 5))
 
-    frame:SetScript("OnShow", function()
-        getConfig()
-        options.exampleTooltip:RegisterEvent("MODIFIER_STATE_CHANGED")
-        showExampleTooltip()
-    end)
-    frame:SetScript("OnHide", function()
-        options.exampleTooltip:UnregisterEvent("MODIFIER_STATE_CHANGED")
-    end)
-end)
+    if (TT.db.profile.show_target) then
+        if (wide_style) then
+            self.tooltip:AddDoubleLine(L["Target"]..":", L["None"], NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
+        else
+            self.tooltip:AddLine(L["Target"]..": |cFF808080"..L["None"].."|r")
+        end
+    end
+
+    if (TT.db.profile.show_talents) then
+        if (wide_style) then
+            self.tooltip:AddDoubleLine(L["Talents"]..":", CI:GetSpecializationName("ROGUE", 1, true).." [51/18/2]", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
+            self.tooltip:AddDoubleLine(" ", CI:GetSpecializationName("ROGUE", 3, true).." [14/3/54]", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
+        else
+            self.tooltip:AddLine(L["Talents"]..":|cFFFFFFFF "..CI:GetSpecializationName("ROGUE", 1, true).." [51/18/2]")
+        end
+    end
+
+    local miniText = ""
+    if (TT.db.profile.show_gs_player) then
+        local gs_r, gs_b, gs_g = GearScore:GetQuality(6054)
+        if (wide_style) then
+            self.tooltip:AddDoubleLine("GearScore: 6054", "(iLvl: 264)", gs_r, gs_g, gs_b, gs_r, gs_g, gs_b)
+        elseif (mini_style) then
+            miniText = string.format("|cFF%02x%02x%02xGS: 6054  L: 264|r  ", gs_r*255, gs_g*255, gs_b*255)
+        else
+            self.tooltip:AddLine("GearScore: 6054", gs_r, gs_g, gs_b)
+        end
+    end
+
+    if (isPawnLoaded and TT.db.profile.show_pawn_player) then
+        local specColor = PawnGetScaleColor("\"Classic\":ROGUE1", true) or "|cffffffff"
+        if (wide_style) then
+            self.tooltip:AddDoubleLine(string.format("Pawn: %s1234.56|r", specColor), string.format("%s(%s)|r", specColor, CI:GetSpecializationName("ROGUE", 1, true)), 1, 1, 1, 1, 1, 1)
+        elseif (mini_style) then
+            miniText = miniText .. string.format("P: %s1234.5|r", specColor)
+        else
+            self.tooltip:AddLine(string.format("Pawn: %s1234.56 (%s)|r", specColor, CI:GetSpecializationName("ROGUE", 1, true)), 1, 1, 1)
+        end
+    end
+
+    if (CI:IsWotlk() and TT.db.profile.show_achievement_points) then
+        self.tooltip:AddLine(ACHIEVEMENT_ICON.." ".."|cFFFFFFFF1337|r ")
+    end
+
+    if (miniText ~= "") then
+        self.tooltip:AddLine(miniText, 1, 1, 1)
+    end
+
+    self.tooltip:Show()
+
+    if (TT.db.profile.show_hp_bar) then
+        self.tooltipHealthBar:Show()
+        self.tooltipPowerBar:SetPoint("TOPLEFT", self.tooltip, "BOTTOMLEFT", 2, -9)
+        self.tooltipPowerBar:SetPoint("TOPRIGHT", self.tooltip, "BOTTOMRIGHT", -2, -9)
+    else
+        self.tooltipHealthBar:Hide()
+        self.tooltipPowerBar:SetPoint("TOPLEFT", self.tooltip, "BOTTOMLEFT", 2, -1)
+        self.tooltipPowerBar:SetPoint("TOPRIGHT", self.tooltip, "BOTTOMRIGHT", -2, -1)
+    end
+
+    if (TT.db.profile.show_power_bar) then
+        self.tooltipPowerBar:Show()
+    else
+        self.tooltipPowerBar:Hide()
+    end
+end
+
+-- Show the Example Tooltip
+function TT.exampleTooltip:Show()
+    if not self.tooltip then
+        self:Create()
+    end
+
+    self.tooltip:SetOwner(TT.optionsFrame, "ANCHOR_NONE")
+    self.tooltip:SetPoint("TOPLEFT", TT.optionsFrame, "TOPRIGHT", 29, 0)
+
+    self:Refresh()
+end
+
+-- Hide the Example Tooltip
+function TT.exampleTooltip:Hide()
+    self.tooltip:Hide()
+end
 
 SLASH_TACOTIP1 = "/tacotip";
 SLASH_TACOTIP2 = "/tooltip";
@@ -797,14 +737,14 @@ SlashCmdList["TACOTIP"] = function(msg)
     if (cmd == "custom") then
         TacoTip_CustomPosEnable(true)
     elseif (cmd == "default") then
-        if (not TacoTipConfig.custom_pos) then
+        if (not TT.db.profile.custom_pos) then
             print("|cff59f0dcTacoTip:|r "..L["Custom tooltip position disabled."])
         end
         if (TacoTipDragButton) then
             TacoTipDragButton:_Disable()
         end
-        TacoTipConfig.custom_pos = nil
-        TacoTipConfig.custom_anchor = nil
+        TT.db.profile.custom_pos = nil
+        TT.db.profile.custom_anchor = nil
     elseif (cmd == "reset") then
         resetCfg()
         if (frame:IsShown()) then
@@ -817,19 +757,19 @@ SlashCmdList["TACOTIP"] = function(msg)
         end
     elseif (strfind(cmd, "anchor")) then
         if (strfind(cmd, "topleft")) then
-            TacoTipConfig.custom_anchor = "TOPLEFT"
+            TT.db.profile.custom_anchor = "TOPLEFT"
             print("|cff59f0dcTacoTip:|r "..L["Custom position anchor set"]..": 'TOPLEFT'")
         elseif (strfind(cmd, "topright")) then
-            TacoTipConfig.custom_anchor = "TOPRIGHT"
+            TT.db.profile.custom_anchor = "TOPRIGHT"
             print("|cff59f0dcTacoTip:|r "..L["Custom position anchor set"]..": 'TOPRIGHT'")
         elseif (strfind(cmd, "bottomleft")) then
-            TacoTipConfig.custom_anchor = "BOTTOMLEFT"
+            TT.db.profile.custom_anchor = "BOTTOMLEFT"
             print("|cff59f0dcTacoTip:|r "..L["Custom position anchor set"]..": 'BOTTOMLEFT'")
         elseif (strfind(cmd, "bottomright")) then
-            TacoTipConfig.custom_anchor = "BOTTOMRIGHT"
+            TT.db.profile.custom_anchor = "BOTTOMRIGHT"
             print("|cff59f0dcTacoTip:|r "..L["Custom position anchor set"]..": 'BOTTOMRIGHT'")
         elseif (strfind(cmd, "center")) then
-            TacoTipConfig.custom_anchor = "CENTER"
+            TT.db.profile.custom_anchor = "CENTER"
             print("|cff59f0dcTacoTip:|r "..L["Custom position anchor set"]..": 'CENTER'")
         else
             print("|cff59f0dcTacoTip:|r "..L["TEXT_HELP_ANCHOR"])
