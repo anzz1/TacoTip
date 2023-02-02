@@ -67,7 +67,8 @@ TT.defaults = {
         character_ilvl_offset_x = 0,
         character_ilvl_offset_y = 0,
         unlock_info_position = false,
-        show_achievement_points = false
+        show_achievement_points = false,
+        scale = 1
     }
 }
 
@@ -313,6 +314,20 @@ TT.options = {
                         TT.exampleTooltip:Refresh()
                     end
                 },
+                scale = {
+                    name = "Scale",
+                    type = "range",
+                    min = .5,
+                    max = 2,
+                    step = .1,
+                    get = function()
+                        return TT.db.profile.scale
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.scale = value
+                        TT.exampleTooltip:Refresh()
+                    end
+                }
             }
         },
         characterFrame = {
@@ -590,6 +605,8 @@ end
 
 -- Refresh the Example Tooltip content
 function TT.exampleTooltip:Refresh()
+    self.tooltip:SetScale(TT.db.profile.scale)
+
     self.tooltip:ClearLines()
 
     local classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)["ROGUE"]
@@ -698,7 +715,6 @@ function TT.exampleTooltip:Show()
         self:Create()
     end
 
-    self.tooltip:SetScale(1)
     self.tooltip:SetOwner(TT.optionsFrame, "ANCHOR_NONE")
     self.tooltip:SetPoint("TOPLEFT", TT.optionsFrame, "TOPRIGHT", 29, 0)
 
