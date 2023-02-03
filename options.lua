@@ -67,7 +67,10 @@ TT.defaults = {
         character_ilvl_offset_x = 0,
         character_ilvl_offset_y = 0,
         unlock_info_position = false,
-        show_achievement_points = false
+        show_achievement_points = false,
+        anchor_mouse_position = "BOTTOMLEFT",
+        anchor_mouse_offset_x = 0,
+        anchor_mouse_offset_y = 0
     }
 }
 
@@ -388,7 +391,6 @@ TT.options = {
                     desc  = "",
                     type = "select",
                     order = 1,
-                    -- width = "double",
                     values = function()
                         return {
                             ["1"] = L["Default"],
@@ -462,6 +464,70 @@ TT.options = {
                     end,
                     set = function(info, value)
                         TT.db.profile.anchor_mouse_spells = value
+                    end
+                },
+                anchorMousePosition = {
+                    name = L["Attachment Point"],
+                    desc  = "",
+                    type = "select",
+                    order = 5,
+                    values = function()
+                        -- Labels are opposite of the value because it's relative to the tooltip frame instead of the anchor
+                        return {
+                            ["BOTTOMLEFT"] = L["Top Right"],
+                            ["LEFT"] = L["Right"],
+                            ["TOPLEFT"] = L["Bottom Right"],
+                            ["TOP"] = L["Bottom"],
+                            ["TOPRIGHT"] = L["Bottom Left"],
+                            ["RIGHT"] = L["Left"],
+                            ["BOTTOMRIGHT"] = L["Top Left"],
+                            ["BOTTOM"] = L["Top"]
+                        }
+                    end,
+                    get = function()
+                        return TT.db.profile.anchor_mouse_position
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.anchor_mouse_position = value
+                    end,
+                    hidden = function()
+                        return TT.db.profile.anchor_position ~= "2"
+                    end
+                },
+                anchorMouseOffsetX = {
+                    name = L["X Offset"],
+                    desc  = "",
+                    type = "range",
+                    order = 6,
+                    min = -100,
+                    max = 100,
+                    step = 1,
+                    get = function()
+                        return TT.db.profile.anchor_mouse_offset_x
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.anchor_mouse_offset_x = value
+                    end,
+                    hidden = function()
+                        return TT.db.profile.anchor_position ~= "2"
+                    end
+                },
+                anchorMouseOffsetY = {
+                    name = L["Y Offset"],
+                    desc  = "",
+                    type = "range",
+                    order = 6,
+                    min = -100,
+                    max = 100,
+                    step = 1,
+                    get = function()
+                        return TT.db.profile.anchor_mouse_offset_y
+                    end,
+                    set = function(info, value)
+                        TT.db.profile.anchor_mouse_offset_y = value
+                    end,
+                    hidden = function()
+                        return TT.db.profile.anchor_position ~= "2"
                     end
                 },
             }
