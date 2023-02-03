@@ -434,6 +434,28 @@ local function CreateMouseAnchor()
     end)
 end
 
+local mouseAnchorOffsetX = {
+    ["BOTTOMLEFT"] = 10,
+    ["LEFT"] = 25,
+    ["TOPLEFT"] = 25,
+    ["TOP"] = 0,
+    ["TOPRIGHT"] = 0,
+    ["RIGHT"] = -10,
+    ["BOTTOMRIGHT"] = -10,
+    ["BOTTOM"] = 0
+}
+
+local mouseAnchorOffsetY = {
+    ["BOTTOMLEFT"] = 10,
+    ["LEFT"] = 0,
+    ["TOPLEFT"] = -10,
+    ["TOP"] = -25,
+    ["TOPRIGHT"] = -25,
+    ["RIGHT"] = 0,
+    ["BOTTOMRIGHT"] = 10,
+    ["BOTTOM"] = 10
+}
+
 hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
     if (TT.db.profile.anchor_mouse_spells) then
         local parentparent = parent and parent:GetParent()
@@ -454,7 +476,9 @@ hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
             end
             tooltip:SetOwner(TacoTipMouseAnchor,"ANCHOR_NONE")
             tooltip:ClearAllPoints(true)
-            tooltip:SetPoint("BOTTOMLEFT", TacoTipMouseAnchor, "CENTER", 10, 10)
+            local x = mouseAnchorOffsetX[TT.db.profile.anchor_mouse_position] + TT.db.profile.anchor_mouse_offset_x
+            local y = mouseAnchorOffsetY[TT.db.profile.anchor_mouse_position] + TT.db.profile.anchor_mouse_offset_y
+            tooltip:SetPoint(TT.db.profile.anchor_mouse_position, TacoTipMouseAnchor, "CENTER", x, y)
         end
     else
         if (TT.db.profile.custom_pos) then
