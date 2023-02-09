@@ -291,7 +291,8 @@ lib.glyphs_table = lib.glyphs_table or {
       [25] = 63222, -- Glyph of Shield of Righteousness
       [26] = 63223, -- Glyph of Divine Plea
       [27] = 63224, -- Glyph of Holy Shock
-      [28] = 63225  -- Glyph of Salvation
+      [28] = 63225, -- Glyph of Salvation
+      [29] = 405004 -- Glyph of Reckoning
     },
     [2] = {
       [1] = 57937,  -- Glyph of Blessing of Kings
@@ -2816,7 +2817,7 @@ local function addCacheUser(guid, inventory, talents, achievements, glyphs)
             else
                 local next = cache.first.next
                 cache.first = nil
-                cache.first = next 
+                cache.first = next
             end
         else
             cache.len = cache.len + 1
@@ -2936,7 +2937,7 @@ local function tryInspect(unit, refresh)
 end
 
 function f:INSPECT_READY(event, guid)
-    if (not guid) then 
+    if (not guid) then
         return
     end
     local unit = lib:PlayerGUIDToUnitToken(guid)
@@ -3144,7 +3145,7 @@ local function inspectQueueTick()
             end
         end
     end
-end 
+end
 if lib.queueTicker then
     lib.queueTicker:Cancel()
 end
@@ -3271,7 +3272,7 @@ end
 --  Returns
 --     @number status              - inspection status
 --                                   == 0 : target cannot be inspected
---                                   == 1 : instant inspection 
+--                                   == 1 : instant inspection
 --                                   == 2 : queued inspection
 --
 function lib:DoInspect(unitorguid)
@@ -3344,7 +3345,7 @@ end
 --     @string specName            - specialization name e.g. "Retribution"
 --
 function lib:GetSpecializationName(class, tabIndex, localized)
-    assert(class == "WARRIOR" or class == "PALADIN" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "SHAMAN" or 
+    assert(class == "WARRIOR" or class == "PALADIN" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "SHAMAN" or
            class == "MAGE" or class == "WARLOCK" or class == "DRUID" or (isWotlk and class == "DEATHKNIGHT"), "invalid class")
     local n = tonumber(tabIndex) or 0
     assert(n > 0 and n < 4, "tabIndex is not a valid number (1-3)")
@@ -3363,7 +3364,7 @@ end
 --     @number numTalents          - number of talents in tab
 --
 function lib:GetNumTalentsByClass(class, tabIndex)
-    assert(class == "WARRIOR" or class == "PALADIN" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "SHAMAN" or 
+    assert(class == "WARRIOR" or class == "PALADIN" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "SHAMAN" or
            class == "MAGE" or class == "WARLOCK" or class == "DRUID" or (isWotlk and class == "DEATHKNIGHT"), "invalid class")
     local n = tonumber(tabIndex) or 0
     assert(n > 0 and n < 4, "tabIndex is not a valid number (1-3)")
@@ -3582,7 +3583,7 @@ end
 --     @number talentID            - talent ID
 --
 function lib:GetTalentInfoByClass(class, tabIndex, talentIndex)
-    assert(class == "WARRIOR" or class == "PALADIN" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "SHAMAN" or 
+    assert(class == "WARRIOR" or class == "PALADIN" or class == "HUNTER" or class == "ROGUE" or class == "PRIEST" or class == "SHAMAN" or
            class == "MAGE" or class == "WARLOCK" or class == "DRUID" or (isWotlk and class == "DEATHKNIGHT"), "invalid class")
     tabIndex = tonumber(tabIndex) or 0
     assert(tabIndex > 0 and tabIndex < 4, "tabIndex is not a valid number (1-3)")
@@ -3975,7 +3976,7 @@ function lib:GetGlyphSocketInfo(unitorguid, socketID, _group)
         return nil
     end
     local n = tonumber(socketID) or 0
-    assert(n >= 1 and n <= 6, "socketID is not a valid number")    
+    assert(n >= 1 and n <= 6, "socketID is not a valid number")
     local guid = getPlayerGUID(unitorguid)
     if (not guid) then
         return nil
@@ -3991,7 +3992,7 @@ function lib:GetGlyphSocketInfo(unitorguid, socketID, _group)
     local _, class = GetPlayerInfoByGUID(guid)
     if (not class) then
         return nil
-    end    
+    end
     if (guid == UnitGUID("player")) then
         return GetGlyphSocketInfo(n, group)
     else
@@ -4046,7 +4047,7 @@ function lib:HasGlyph(unitorguid, glyphSpellID, _group)
     local _, class = GetPlayerInfoByGUID(guid)
     if (not class) then
         return nil
-    end    
+    end
     if (guid == UnitGUID("player")) then
         for i=1,6 do
             local enabled, _, id = GetGlyphSocketInfo(i, group)
