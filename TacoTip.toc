@@ -1,5 +1,5 @@
 ## Interface: 11304
-## Version: 0.3.6
+## Version: 0.3.7
 ## Title: TacoTip
 ## Notes: TacoTip (GearScore & Talents)
 ## Author: kebabstorm
