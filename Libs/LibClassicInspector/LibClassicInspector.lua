@@ -4,11 +4,11 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 11 (2023-02-10)
+    Version: 12 (2023-02-25)
 
 --]]
 
-local LCI_VERSION = 11
+local LCI_VERSION = 12
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
@@ -220,7 +220,7 @@ end
 -- TODO: talent IDs
 -- TODO: localization
 if (isWotlk) then
-if (oldminor < 11) then
+if (oldminor < 12) then
   lib.glyphs_table = nil
   lib.glyph_r_tbl = nil
 end
@@ -369,7 +369,7 @@ lib.glyphs_table = lib.glyphs_table or {
       [19] = 56819, -- Glyph of Preparation
       [20] = 56820, -- Glyph of Crippling Poison
       [21] = 56821, -- Glyph of Sinister Strike
-      [22] = 63239, -- Glyph of Cloak of Shadows
+      [22] = 63269, -- Glyph of Cloak of Shadows
       [23] = 63249, -- Glyph of Hunger of Blood
       [24] = 63252, -- Glyph of Killing Spree
       [25] = 63253, -- Glyph of Shadow Dance
