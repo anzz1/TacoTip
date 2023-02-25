@@ -4,11 +4,11 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 12 (2023-02-25)
+    Version: 13 (2023-02-25)
 
 --]]
 
-local LCI_VERSION = 12
+local LCI_VERSION = 13
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
@@ -220,7 +220,7 @@ end
 -- TODO: talent IDs
 -- TODO: localization
 if (isWotlk) then
-if (oldminor < 12) then
+if (oldminor < 13) then
   lib.glyphs_table = nil
   lib.glyph_r_tbl = nil
 end
@@ -275,7 +275,7 @@ lib.glyphs_table = lib.glyphs_table or {
       [5] = 54926,  -- Glyph of Hammer of Wrath
       [6] = 54927,  -- Glyph of Crusader Strike
       [7] = 54928,  -- Glyph of Consecration
-      [8] = 55115,  -- Glyph of Righteous Defense
+      [8] = 54929,  -- Glyph of Righteous Defense
       [9] = 54930,  -- Glyph of Avenger's Shield
       [10] = 54931, -- Glyph of Turn Evil
       [11] = 54934, -- Glyph of Exorcism
