@@ -4,11 +4,11 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 13 (2023-02-25)
+    Version: 14 (2023-02-26)
 
 --]]
 
-local LCI_VERSION = 13
+local LCI_VERSION = 14
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
@@ -3101,6 +3101,7 @@ local function sendInfo()
                 for i = 1, 6 do
                     local z = select(3, GetGlyphSocketInfo(i, x))
                     if (z) then
+                        if (z == 55115) then z = 54929 end
                         s = s..string.char(glyph_r_tbl[z]+48)
                     else
                         s = s.."0"
@@ -4055,8 +4056,11 @@ function lib:HasGlyph(unitorguid, glyphSpellID, _group)
     if (guid == UnitGUID("player")) then
         for i=1,6 do
             local enabled, _, id = GetGlyphSocketInfo(i, group)
-            if (enabled and id == glyphSpellID) then
-                return true
+            if (enabled and id) then
+                if (id == 55115) then id = 54929 end
+                if (id == glyphSpellID) then
+                    return true
+                end
             end
         end
         return false
@@ -4124,6 +4128,7 @@ function lib:GetGlyphs(unitorguid, _group)
         for i=1,6 do
             local enabled, _, id = GetGlyphSocketInfo(i, group)
             if (enabled and id) then
+                if (id == 55115) then id = 54929 end
                 glyphs[i] = id
             else
                 glyphs[i] = 0
