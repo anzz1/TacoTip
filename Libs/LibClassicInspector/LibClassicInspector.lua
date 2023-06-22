@@ -4,11 +4,11 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 14 (2023-02-26)
+    Version: 15 (2023-06-22)
 
 --]]
 
-local LCI_VERSION = 14
+local LCI_VERSION = 15
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
@@ -263,7 +263,8 @@ lib.glyphs_table = lib.glyphs_table or {
       [4] = 58098,  -- Glyph of Thunder Clap
       [5] = 58099,  -- Glyph of Mocking Blow
       [6] = 58104,  -- Glyph of Enduring Victory
-      [7] = 68164   -- Glyph of Command
+      [7] = 68164,  -- Glyph of Command
+      [8] = 414812  -- Glyph of Shattering Throw
     },
   },
   ["PALADIN"] = {
@@ -621,7 +622,8 @@ lib.glyphs_table = lib.glyphs_table or {
       [28] = 63057, -- Glyph of Barkskin
       [29] = 65243, -- Glyph of Survival Instincts
       [30] = 67598, -- Glyph of Claw
-      [31] = 71013  -- Glyph of Rapid Rejuvenation
+      [31] = 71013, -- Glyph of Rapid Rejuvenation
+      [32] = 413895 -- Glyph of Omen of Clarity
     },
     [2] = {
       [1] = 57855,  -- Glyph of the Wild
