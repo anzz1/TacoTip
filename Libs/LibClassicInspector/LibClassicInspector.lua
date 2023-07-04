@@ -4,11 +4,11 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 15 (2023-06-22)
+    Version: 16 (2023-07-04)
 
 --]]
 
-local LCI_VERSION = 15
+local LCI_VERSION = 16
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
@@ -220,7 +220,7 @@ end
 -- TODO: talent IDs
 -- TODO: localization
 if (isWotlk) then
-if (oldminor < 13) then
+if (oldminor < 16) then
   lib.glyphs_table = nil
   lib.glyph_r_tbl = nil
 end
