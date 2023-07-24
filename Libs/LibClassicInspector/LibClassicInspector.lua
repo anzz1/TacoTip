@@ -4,11 +4,11 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 16 (2023-07-04)
+    Version: 17 (2023-07-24)
 
 --]]
 
-local LCI_VERSION = 16
+local LCI_VERSION = 17
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
@@ -3745,8 +3745,8 @@ function lib:GetTalentRanksTable(unitorguid)
         local talents = {[1] = {[1] = {}, [2] = {}, [3] = {}}, [2] = {[1] = {}, [2] = {}, [3] = {}}}
         for x = 1, (isWotlk and 2 or 1) do
             for i = 1, 3 do  -- GetNumTalentTabs
-                for j = 1, GetNumTalents(i, true, false) do
-                    talents[x][i][j] = select(5, GetTalentInfo(i, j, true, false, x))
+                for j = 1, GetNumTalents(i, false, false) do
+                    talents[x][i][j] = select(5, GetTalentInfo(i, j, false, false, x))
                 end
             end
         end
