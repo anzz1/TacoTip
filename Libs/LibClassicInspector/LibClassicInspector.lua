@@ -56,6 +56,7 @@ local C_PREFIX = "LCIV1"
 local GUIDIsPlayer = C_PlayerInfo.GUIDIsPlayer
 local SendAddonMessage = C_ChatInfo.SendAddonMessage
 local NewTicker = C_Timer.NewTicker
+local GetNamePlates = C_NamePlate.GetNamePlates
 
 local isWotlk = clientBuildMajor == 51
 local isTBC = clientBuildMajor == 50
@@ -3811,7 +3812,7 @@ function lib:PlayerGUIDToUnitToken(guid)
         return "mouseover"
     end
     if (GetCVar("nameplateShowFriends") == "1" or GetCVar("nameplateShowEnemies") == "1") then
-        local nameplatesArray = C_NamePlate.GetNamePlates()
+        local nameplatesArray = GetNamePlates()
         for i, nameplate in ipairs(nameplatesArray) do
             if (UnitGUID(nameplate.namePlateUnitToken) == guid) then
                 return nameplate.namePlateUnitToken
