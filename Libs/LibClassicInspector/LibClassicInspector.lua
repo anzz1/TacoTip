@@ -13,9 +13,9 @@ local LCI_VERSION = 17
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
 -- load only on classic/tbc/wotlk
-if (clientBuildMajor < 49 or clientBuildMajor > 51 or string.byte(clientVersionString, 2) ~= 46) then
-    return
-end
+-- if (clientBuildMajor < 49 or clientBuildMajor > 51 or string.byte(clientVersionString, 2) ~= 46) then
+--     return
+-- end
 
 assert(LibStub, "LibClassicInspector requires LibStub")
 assert(LibStub:GetLibrary("CallbackHandler-1.0", true), "LibClassicInspector requires CallbackHandler-1.0")
