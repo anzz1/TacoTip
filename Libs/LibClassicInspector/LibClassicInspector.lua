@@ -58,7 +58,7 @@ local SendAddonMessage = C_ChatInfo.SendAddonMessage
 local NewTicker = C_Timer.NewTicker
 local GetNamePlates = C_NamePlate.GetNamePlates
 
-local isWotlk = clientBuildMajor == 51
+local isWotlk = clientBuildMajor == 51 or clientBuildMajor == 52
 local isTBC = clientBuildMajor == 50
 local isClassic = clientBuildMajor == 49
 
@@ -3099,19 +3099,19 @@ local function sendInfo()
                 end
             end
         end
-        if (isWotlk) then
-            for x = 1, 2 do
-                for i = 1, 6 do
-                    local z = select(3, GetGlyphSocketInfo(i, x))
-                    if (z) then
-                        if (z == 55115) then z = 54929 end
-                        s = s..string.char(glyph_r_tbl[z]+48)
-                    else
-                        s = s.."0"
-                    end
-                end
-            end
-        end
+        -- if (isWotlk) then
+        --     for x = 1, 2 do
+        --         for i = 1, 6 do
+        --             local z = select(3, GetGlyphSocketInfo(i, x))
+        --             if (z) then
+        --                 if (z == 55115) then z = 54929 end
+        --                 s = s..string.char(glyph_r_tbl[z]+48)
+        --             else
+        --                 s = s.."0"
+        --             end
+        --         end
+        --     end
+        -- end
         if (IsInGroup(LE_PARTY_CATEGORY_HOME)) then
             SendAddonMessage(C_PREFIX, s, "RAID")
         end
