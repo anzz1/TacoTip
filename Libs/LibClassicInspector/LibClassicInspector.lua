@@ -2840,7 +2840,12 @@ local function cacheUserInventory(unit)
     local inventory = {["time"] = time(), ["inspect"] = true}
     for i=1,19 do
         inventory[i] = GetInventoryItemID(unit, i)
-        --C_Item.RequestLoadItemDataByID(itemID)
+        local itemLink = GetInventoryItemLink(unit, i)
+        if itemLink ~= nil then
+            local _, _, _, _, Id, _, _, _, _, _, _, _, _, _ = string.find(itemLink,
+            "|?c?f?f?(%x*)|?H?([^:]*):?(%d+):?(%d*):?(%d*):?(%d*):?(%d*):?(%d*):?(%-?%d*):?(%-?%d*):?(%d*):?(%d*):?(%-?%d*)|?h?%[?([^%[%]]*)%]?|?h?|?r?")
+            inventory[i] = tonumber(Id)
+        end
     end
     local user = getCacheUser(guid)
     if(user) then
