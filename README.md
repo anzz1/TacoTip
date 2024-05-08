@@ -1,6 +1,6 @@
-## TacoTip: Better player tooltips - for Classic / TBC / WoTLK
+## TacoTip: Better player tooltips - for Cataclysm Classic
 
-**Compatible with Classic & TBC & WOTLK**
+**Compatible with Cataclysm Classic
 
 All features are configurable - you decide what you want to see or not to see.
 
@@ -44,6 +44,9 @@ Check out the API [here](https://github.com/anzz1/TacoTip/blob/master/Libs/LibCl
 Press ESC for Menu -> Addons -> Check: [X] Load out of date AddOns  
 
 ![out-of-date-addon-menu-small](https://user-images.githubusercontent.com/13628128/199223990-17896046-3407-472d-be70-b78fc42ae905.jpg)
+
+Developed by anzz1
+Updated for Cataclysm by Zik
 
 ---
 
