@@ -3094,39 +3094,39 @@ end
 C_ChatInfo.RegisterAddonMessagePrefix(C_PREFIX)
 
 local function sendInfo()
-    if (IsInGroup() or IsInGuild()) then
-        local s = "02-"
-        s = s .. (isWotlk and GetActiveTalentGroup(false, false) or 1)
-        for x = 1, (isWotlk and 2 or 1) do
-            for i = 1, 3 do  -- GetNumTalentTabs
-                for j = 1, GetNumTalents(i, false, false) do
-                    s = s .. select(5, GetTalentInfo(i, j, false, false, x))
-                end
-            end
-        end
-        -- if (isWotlk) then
-        --     for x = 1, 2 do
-        --         for i = 1, 6 do
-        --             local z = select(3, GetGlyphSocketInfo(i, x))
-        --             if (z) then
-        --                 if (z == 55115) then z = 54929 end
-        --                 s = s..string.char(glyph_r_tbl[z]+48)
-        --             else
-        --                 s = s.."0"
-        --             end
-        --         end
-        --     end
-        -- end
-        if (IsInGroup(LE_PARTY_CATEGORY_HOME)) then
-            SendAddonMessage(C_PREFIX, s, "RAID")
-        end
-        if (IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) then
-            SendAddonMessage(C_PREFIX, s, "INSTANCE_CHAT")
-        end
-        if (IsInGuild()) then
-            SendAddonMessage(C_PREFIX, s, "GUILD")
-        end
-    end
+    -- if (IsInGroup() or IsInGuild()) then
+    --     local s = "02-"
+    --     s = s .. (isWotlk and GetActiveTalentGroup(false, false) or 1)
+    --     for x = 1, (isWotlk and 2 or 1) do
+    --         for i = 1, 3 do  -- GetNumTalentTabs
+    --             for j = 1, GetNumTalents(i, false, false) do
+    --                 s = s .. select(5, GetTalentInfo(i, j, false, false, x))
+    --             end
+    --         end
+    --     end
+    --     -- if (isWotlk) then
+    --     --     for x = 1, 2 do
+    --     --         for i = 1, 6 do
+    --     --             local z = select(3, GetGlyphSocketInfo(i, x))
+    --     --             if (z) then
+    --     --                 if (z == 55115) then z = 54929 end
+    --     --                 s = s..string.char(glyph_r_tbl[z]+48)
+    --     --             else
+    --     --                 s = s.."0"
+    --     --             end
+    --     --         end
+    --     --     end
+    --     -- end
+    --     if (IsInGroup(LE_PARTY_CATEGORY_HOME)) then
+    --         SendAddonMessage(C_PREFIX, s, "RAID")
+    --     end
+    --     if (IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) then
+    --         SendAddonMessage(C_PREFIX, s, "INSTANCE_CHAT")
+    --     end
+    --     if (IsInGuild()) then
+    --         SendAddonMessage(C_PREFIX, s, "GUILD")
+    --     end
+    -- end
 end
 
 local function inspectQueueTick()
