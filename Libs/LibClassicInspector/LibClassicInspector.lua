@@ -2985,7 +2985,7 @@ function f:CHAT_MSG_ADDON(event, prefix, text, channelType, senderFullName, send
             for i = 1, 3 do  -- GetNumTalentTabs
                 for j = 1, lib:GetNumTalentsByClass(class, i) do
                     y = y + 1
-                    local z = tonumber(string.byte(s,y))
+                    local z = tonumber(string.byte(s,y) or 0)
                     z = z and (z-48) or -1
                     if (z < 0 or z > select(6, lib:GetTalentInfoByClass(class, i, j))) then return end
                     talents[x][i][j] = z
