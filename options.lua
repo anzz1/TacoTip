@@ -120,7 +120,12 @@ end
 -- main frame
 local frame = CreateFrame("Frame","TacoTipOptions")
 frame.name = addOnName
-InterfaceOptions_AddCategory(frame)
+if InterfaceOptions_AddCategory then
+    InterfaceOptions_AddCategory(frame)
+else
+    local category, layout = _G.Settings.RegisterCanvasLayoutCategory(frame, frame.name)
+    _G.Settings.RegisterAddOnCategory(category)
+end
 frame:Hide()
 
 frame:SetScript("OnShow", function(frame)
