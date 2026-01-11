@@ -64,6 +64,7 @@ function TT:GetDefaults()
         character_ilvl_offset_x = 0,
         character_ilvl_offset_y = 0,
         unlock_info_position = false,
+        hide_welcome_message = false,
         show_achievement_points = false
         --conf_version = addOnVersion,
         --custom_pos = nil,
@@ -584,6 +585,15 @@ frame:SetScript("OnShow", function(frame)
         end)
     options.chatClassColors:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -116) 
 
+    options.hideWelcomeMessage = newCheckbox(
+        "HideWelcomeMessage",
+        L["Hide Welcome Message"],
+        L["Hide welcome message at login"],
+        function(self, value)
+            TacoTipConfig.hide_welcome_message = value
+        end)
+    options.hideWelcomeMessage:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", -2, -144)
+
     options.customPosition = newCheckbox(
         "CustomPosition",
         L["Custom Tooltip Position"],
@@ -759,6 +769,7 @@ frame:SetScript("OnShow", function(frame)
         options.anchorMouseSpells:SetChecked(TacoTipConfig.anchor_mouse_spells)
         options.lockCharacterInfoPosition:SetChecked(not TacoTipConfig.unlock_info_position)
         options.lockCharacterInfoPosition:SetDisabled(not (TacoTipConfig.show_gs_character or TacoTipConfig.show_avg_ilvl))
+        options.hideWelcomeMessage:SetChecked(TacoTipConfig.hide_welcome_message)
         options.showAchievementPoints:SetChecked(TacoTipConfig.show_achievement_points)
     end
 
@@ -771,7 +782,7 @@ frame:SetScript("OnShow", function(frame)
     resetcfg:SetText(L["Reset configuration"])
     resetcfg:SetWidth(177)
     resetcfg:SetHeight(24)
-    resetcfg:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 0, -152)
+    resetcfg:SetPoint("TOPLEFT", extraText, "BOTTOMLEFT", 0, -180)
     resetcfg:SetScript("OnClick", function()
         resetCfg()
         frame:Refresh()
