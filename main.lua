@@ -1,6 +1,6 @@
 
 local addOnName = ...
-local addOnVersion = GetAddOnMetadata(addOnName, "Version") or "0.0.1"
+local addOnVersion = (GetAddOnMetadata and GetAddOnMetadata(addOnName, "Version")) or (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(addOnName, "Version")) or "0.0.1"
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
@@ -447,7 +447,7 @@ hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
         end
     end
     if (TacoTipConfig.anchor_mouse) then
-        if (not TacoTipConfig.anchor_mouse_world or GetMouseFocus() == WorldFrame) then
+        if (not TacoTipConfig.anchor_mouse_world or TT:GetMouseFocus() == WorldFrame) then
             if (not TacoTipMouseAnchor) then
                 CreateMouseAnchor()
                 CreateMouseAnchor = nil
@@ -708,6 +708,14 @@ function TT:RefreshInspectFrame()
             InspectAvgItemLvlText.mover:Hide()
         end
     end
+end
+
+function TT:GetMouseFocus()
+    if (GetMouseFoci) then
+        local frames = GetMouseFoci()
+        return frames and frames[1]
+    end
+    return GetMouseFocus()
 end
 
 local function onEvent(self, event, ...)

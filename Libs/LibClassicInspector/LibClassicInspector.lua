@@ -4,11 +4,11 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 17 (2023-07-24)
+    Version: 18 (2025-01-16)
 
 --]]
 
-local LCI_VERSION = 17
+local LCI_VERSION = 18
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
@@ -2975,8 +2975,8 @@ function f:CHAT_MSG_ADDON(event, prefix, text, channelType, senderFullName, send
         if (guid == UnitGUID("player")) then return end
         local _, class = GetPlayerInfoByGUID(guid)
         if (not class) then return end
-        local a = tonumber(string.byte(text,4))
-        a = a and (a-48) or 0
+        local a = tonumber(string.byte(text,4) or -1)
+        a = a and (a-48) or -1
         if (a < 1 or a > 2) then return end
         local talents = {[1] = {[1] = {}, [2] = {}, [3] = {}}, [2] = {[1] = {}, [2] = {}, [3] = {}}, ["time"] = time(), ["active"] = a, ["inspect"] = false}
         local s = strsub(text, 5)
@@ -2985,7 +2985,7 @@ function f:CHAT_MSG_ADDON(event, prefix, text, channelType, senderFullName, send
             for i = 1, 3 do  -- GetNumTalentTabs
                 for j = 1, lib:GetNumTalentsByClass(class, i) do
                     y = y + 1
-                    local z = tonumber(string.byte(s,y))
+                    local z = tonumber(string.byte(s,y) or -1)
                     z = z and (z-48) or -1
                     if (z < 0 or z > select(6, lib:GetTalentInfoByClass(class, i, j))) then return end
                     talents[x][i][j] = z
@@ -2997,7 +2997,7 @@ function f:CHAT_MSG_ADDON(event, prefix, text, channelType, senderFullName, send
             glyphs = {["time"] = time()}
             for x = 1, 12 do
                 y = y + 1
-                local z = tonumber(string.byte(s,y))
+                local z = tonumber(string.byte(s,y) or -1)
                 z = z and (z-48) or -1
                 if (x == 1 or x == 4 or x == 6 or x == 7 or x == 10 or x == 12) then
                     if (z < 0 or z > #glyphs_table[class][1]) then return end
