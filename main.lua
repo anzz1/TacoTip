@@ -5,10 +5,9 @@ local addOnVersion = (GetAddOnMetadata and GetAddOnMetadata(addOnName, "Version"
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor = string.byte(clientVersionString, 1)
 -- load only on classic/tbc/wotlk
-if (clientBuildMajor < 49 or clientBuildMajor > 51 or string.byte(clientVersionString, 2) ~= 46) then
-    return
-end
-
+-- if (clientBuildMajor < 49 or clientBuildMajor > 51 or string.byte(clientVersionString, 2) ~= 46) then
+--     return
+-- end
 assert(LibStub, "TacoTip requires LibStub")
 assert(LibStub:GetLibrary("LibClassicInspector", true), "TacoTip requires LibClassicInspector")
 assert(LibStub:GetLibrary("LibDetours-1.0", true), "TacoTip requires LibDetours-1.0")
@@ -22,7 +21,8 @@ local GearScore = TT_GS
 local L = TACOTIP_LOCALE
 local TT = _G[addOnName]
 
-local isPawnLoaded = PawnClassicLastUpdatedVersion and PawnClassicLastUpdatedVersion >= 2.0538
+-- local isPawnLoaded = PawnClassicLastUpdatedVersion and PawnClassicLastUpdatedVersion >= 2.0538
+local isPawnLoaded = PawnClassicLastUpdatedVersion ~= nil
 
 local HORDE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-HORDE:16:16:-2:0:64:64:0:38:0:38|t"
 local ALLIANCE_ICON = "|TInterface\\TargetingFrame\\UI-PVP-ALLIANCE:16:16:-2:0:64:64:0:38:0:38|t"
@@ -504,7 +504,7 @@ local function CreateMover(parent, topkek, bottomright, callbackFunc)
 end
 
 function TT:InitCharacterFrame()
-    CharacterModelFrame:CreateFontString("PersonalGearScore")
+    CharacterModelScene:CreateFontString("PersonalGearScore")
     PersonalGearScore:SetFont(L["CHARACTER_FRAME_GS_VALUE_FONT"], L["CHARACTER_FRAME_GS_VALUE_FONT_SIZE"])
     PersonalGearScore:SetText("0")
     PersonalGearScore.RefreshPosition = function()
@@ -512,7 +512,7 @@ function TT:InitCharacterFrame()
     end
     PersonalGearScore:RefreshPosition()
 
-    CharacterModelFrame:CreateFontString("PersonalGearScoreText")
+    CharacterModelScene:CreateFontString("PersonalGearScoreText")
     PersonalGearScoreText:SetFont(L["CHARACTER_FRAME_GS_TITLE_FONT"], L["CHARACTER_FRAME_GS_TITLE_FONT_SIZE"])
     PersonalGearScoreText:SetText("GearScore")
     PersonalGearScoreText.RefreshPosition = function()
@@ -520,7 +520,7 @@ function TT:InitCharacterFrame()
     end
     PersonalGearScoreText:RefreshPosition()
 
-    CharacterModelFrame:CreateFontString("PersonalAvgItemLvl")
+    CharacterModelScene:CreateFontString("PersonalAvgItemLvl")
     PersonalAvgItemLvl:SetFont(L["CHARACTER_FRAME_ILVL_VALUE_FONT"], L["CHARACTER_FRAME_ILVL_VALUE_FONT_SIZE"])
     PersonalAvgItemLvl:SetText("0")
     PersonalAvgItemLvl.RefreshPosition = function()
@@ -528,7 +528,7 @@ function TT:InitCharacterFrame()
     end
     PersonalAvgItemLvl:RefreshPosition()
 
-    CharacterModelFrame:CreateFontString("PersonalAvgItemLvlText")
+    CharacterModelScene:CreateFontString("PersonalAvgItemLvlText")
     PersonalAvgItemLvlText:SetFont(L["CHARACTER_FRAME_ILVL_TITLE_FONT"], L["CHARACTER_FRAME_ILVL_TITLE_FONT_SIZE"])
     PersonalAvgItemLvlText:SetText("iLvl")
     PersonalAvgItemLvlText.RefreshPosition = function()
@@ -720,7 +720,7 @@ end
 
 local function onEvent(self, event, ...)
     if (event == "PLAYER_EQUIPMENT_CHANGED") then
-        if (PaperDollFrame and PaperDollFrame:IsShown()) then
+        if (CharacterModelScene and PaperDollFrame and PaperDollFrame:IsShown()) then
             TT:RefreshCharacterFrame()
         end
     elseif (event == "MODIFIER_STATE_CHANGED") then
@@ -749,7 +749,7 @@ local function onEvent(self, event, ...)
                     self:Hide()
                 end)
             end
-            if (CharacterModelFrame and PaperDollFrame) then
+            if (CharacterModelScene and PaperDollFrame) then
                 TT:RefreshCharacterFrame()
             end
             local first_login = (TacoTipConfig.conf_version ~= addOnVersion)
@@ -807,7 +807,6 @@ do
     CI.RegisterCallback(addOnName, "TALENTS_READY", function(...) onEvent(f, ...) end)
     TT.frame = f
 end
-
 
 function TacoTip_CustomPosEnable(show)
     if (not TacoTipDragButton) then
