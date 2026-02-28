@@ -1,5 +1,5 @@
 ## Interface: 11304, 20505, 30400
-## Version: 0.4.5
+## Version: 0.4.7
 ## Title: TacoTip
 ## Notes: TacoTip (GearScore & Talents)
 ## Author: kebabstorm
@@ -27,4 +27,5 @@ gearscore.lua
 pawn.lua
 options.lua
 main.lua
+
 
