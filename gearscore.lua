@@ -190,15 +190,16 @@ function TT_GS:GetItemScore(ItemLink)
             ItemRarity = 3
             ItemLevel = 187.05
         end
-        -- Use appropriate formula table based on expansion
-        -- Table A is designed for high-level WotLK items (>120 ilvl)
-        -- Table B works better for TBC/Classic item level ranges
-        -- Without this check, TBC Karazhan items (ilvl 115-125) incorrectly switch to Table A
-        -- at ilvl 120+, causing a massive ~40% GearScore drop due to different scaling coefficients
-        if (CI:IsWotlk() and ItemLevel > 120) then
-            Table = GS_Formula["A"]
-        else
+        if (ItemLevel <= 120) then
             Table = GS_Formula["B"]
+        elseif (ItemLevel < 168 and ItemRarity == 4) then
+            Table = GS_Formula["B"]
+        elseif (ItemLevel < 148 and ItemRarity == 3) then
+            Table = GS_Formula["B"]
+        elseif (ItemLevel < 138 and ItemRarity == 2) then
+            Table = GS_Formula["B"]
+        else
+            Table = GS_Formula["A"]
         end
         if ((ItemRarity >= 2) and (ItemRarity <= 4)) then
             local Red, Green, Blue = TT_GS:GetQuality((floor(((ItemLevel - Table[ItemRarity].A) / Table[ItemRarity].B) * 1 * Scale)) * 11.25)
