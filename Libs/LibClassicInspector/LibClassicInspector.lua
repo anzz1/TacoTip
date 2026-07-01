@@ -4,16 +4,19 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 18 (2025-01-16)
+    Version: 19 (2026-07-01)
 
 --]]
 
-local LCI_VERSION = 18
+local LCI_VERSION = 19
 
 local clientVersionString = GetBuildInfo()
-local clientBuildMajor = string.byte(clientVersionString, 1)
+local clientBuildMajor, clientBuildMinor, clientBuildPatch = string.match(clientVersionString, "(%d+)%.(%d+)%.(%d+)")
+clientBuildMajor = tonumber(clientBuildMajor) or 0
+clientBuildMinor = tonumber(clientBuildMinor) or 0
+clientBuildPatch = tonumber(clientBuildPatch) or 0
 -- load only on classic/tbc/wotlk
-if (clientBuildMajor < 49 or clientBuildMajor > 51 or string.byte(clientVersionString, 2) ~= 46) then
+if (clientBuildMajor < 1 or clientBuildMajor > 3) then
     return
 end
 
@@ -58,13 +61,14 @@ local SendAddonMessage = C_ChatInfo.SendAddonMessage
 local NewTicker = C_Timer.NewTicker
 local GetNamePlates = C_NamePlate.GetNamePlates
 
-local isWotlk = clientBuildMajor == 51
-local isTBC = clientBuildMajor == 50
-local isClassic = clientBuildMajor == 49
+local isWotlk = clientBuildMajor == 3
+local isTBC = clientBuildMajor == 2
+local isTBCA = (clientBuildMajor == 2 and clientBuildMinor >= 5 and clientBuildPatch >= 5)
+local isClassic = clientBuildMajor == 1
 -- Dual talent specialization exists in Wrath, and was also enabled on the
 -- Anniversary TBC (2.5.x) realms, so gate talent-group logic on this instead
 -- of isWotlk. Glyphs/achievements remain Wrath-only (isWotlk).
-local hasDualSpec = isWotlk or isTBC
+local hasDualSpec = isWotlk or isTBCA
 
 local playerClass = select(2, UnitClass("player"))
 
