@@ -4,11 +4,11 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 19 (2026-07-01)
+    Version: 20 (2026-07-08)
 
 --]]
 
-local LCI_VERSION = 19
+local LCI_VERSION = 20
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor, clientBuildMinor, clientBuildPatch = string.match(clientVersionString, "(%d+)%.(%d+)%.(%d+)")
