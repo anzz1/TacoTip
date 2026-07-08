@@ -3826,8 +3826,9 @@ function lib:PlayerGUIDToUnitToken(guid)
     if (GetCVar("nameplateShowFriends") == "1" or GetCVar("nameplateShowEnemies") == "1") then
         local nameplatesArray = GetNamePlates()
         for i, nameplate in ipairs(nameplatesArray) do
-            if (UnitGUID(nameplate.namePlateUnitToken) == guid) then
-                return nameplate.namePlateUnitToken
+            local unitToken = nameplate.namePlateUnitToken or nameplate.unitToken
+            if (unitToken and UnitGUID(unitToken) == guid) then
+                return unitToken
             end
         end
     end
