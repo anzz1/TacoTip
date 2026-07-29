@@ -123,10 +123,12 @@ frame.name = addOnName
 local settingsCategoryID
 if InterfaceOptions_AddCategory then
     InterfaceOptions_AddCategory(frame)
-else
+elseif _G.Settings then
     local category, layout = _G.Settings.RegisterCanvasLayoutCategory(frame, frame.name)
-    _G.Settings.RegisterAddOnCategory(category)
-    settingsCategoryID = category:GetID()
+    if (category) then
+        _G.Settings.RegisterAddOnCategory(category)
+        settingsCategoryID = category.GetID and category:GetID()
+    end
 end
 frame:Hide()
 
@@ -842,8 +844,8 @@ SlashCmdList["TACOTIP"] = function(msg)
             print("|cff59f0dcTacoTip:|r "..L["TEXT_HELP_ANCHOR"])
         end
     else
-        if settingsCategoryID and Settings and Settings.OpenToCategory then
-            Settings.OpenToCategory(settingsCategoryID)
+        if settingsCategoryID and _G.Settings and _G.Settings.OpenToCategory then
+            _G.Settings.OpenToCategory(settingsCategoryID)
         elseif InterfaceOptionsFrame_OpenToCategory then
             InterfaceOptionsFrame_OpenToCategory(addOnName)
             InterfaceOptionsFrame_OpenToCategory(addOnName)
