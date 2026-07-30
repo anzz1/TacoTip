@@ -123,9 +123,9 @@ frame.name = addOnName
 local settingsCategoryID
 if InterfaceOptions_AddCategory then
     InterfaceOptions_AddCategory(frame)
-elseif _G.Settings then
+elseif _G.Settings and _G.Settings.RegisterCanvasLayoutCategory then
     local category, layout = _G.Settings.RegisterCanvasLayoutCategory(frame, frame.name)
-    if (category) then
+    if (category and _G.Settings.RegisterAddOnCategory) then
         _G.Settings.RegisterAddOnCategory(category)
         settingsCategoryID = category.GetID and category:GetID()
     end
