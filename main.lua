@@ -762,7 +762,9 @@ local function onEvent(self, event, ...)
                 TacoTipConfig.conf_version = addOnVersion
             end
             CAfter(3, function()
-                print("|cff59f0dcTacoTip v"..addOnVersion.." "..L["TEXT_HELP_WELCOME"])
+                if not (TacoTipConfig.hide_welcome_message) then
+                    print("|cff59f0dcTacoTip v"..addOnVersion.." "..L["TEXT_HELP_WELCOME"])
+                end
                 if (first_login) then
                     print("|cff59f0dcTacoTip:|r "..L["TEXT_HELP_FIRST_LOGIN"])
                 end
