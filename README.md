@@ -1,5 +1,7 @@
 ## TacoTip: Better player tooltips - for Classic / TBC / WoTLK
 
+## Bug Fixes
+ - Fixed GearScore calculation discrepancy for Karazhan Hunter bows.
 **Compatible with Classic & TBC & WOTLK**
 
 All features are configurable - you decide what you want to see or not to see.
