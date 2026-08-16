@@ -4,11 +4,11 @@
     for Classic/TBC/WOTLK
 
     Requires: LibStub, CallbackHandler-1.0, LibDetours-1.0
-    Version: 20 (2026-07-08)
+    Version: 21 (2026-08-16)
 
 --]]
 
-local LCI_VERSION = 20
+local LCI_VERSION = 21
 
 local clientVersionString = GetBuildInfo()
 local clientBuildMajor, clientBuildMinor, clientBuildPatch = string.match(clientVersionString, "(%d+)%.(%d+)%.(%d+)")
@@ -3825,10 +3825,22 @@ function lib:PlayerGUIDToUnitToken(guid)
     end
     if (GetCVar("nameplateShowFriends") == "1" or GetCVar("nameplateShowEnemies") == "1") then
         local nameplatesArray = GetNamePlates()
-        for i, nameplate in ipairs(nameplatesArray) do
-            local unitToken = nameplate.namePlateUnitToken or nameplate.unitToken
-            if (unitToken and UnitGUID(unitToken) == guid) then
-                return unitToken
+        if (nameplatesArray) then
+            for i, nameplate in ipairs(nameplatesArray) do
+                -- TBC Anniversary 2.5.6: nameplate.unitToken can be a stale
+                -- "nameplateN" that UnitGUID rejects (throws, does not return nil).
+                local unitToken = nameplate.namePlateUnitToken
+                    or (nameplate.UnitFrame and nameplate.UnitFrame.unit)
+                    or nameplate.unitToken
+                if (type(unitToken) == "string" and unitToken ~= "") then
+                    local existsOk, exists = pcall(UnitExists, unitToken)
+                    if (existsOk and exists) then
+                        local guidOk, plateGuid = pcall(UnitGUID, unitToken)
+                        if (guidOk and plateGuid == guid) then
+                            return unitToken
+                        end
+                    end
+                end
             end
         end
     end
