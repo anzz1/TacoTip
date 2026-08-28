@@ -51,6 +51,7 @@ INSPECTOR_INFO_MAX_INTERVAL = 60
 local MAX_TALENTS_PER_TAB = 31
 local skip_error = false
 local nextInspectTime = 0
+local pendingUserInspect = false
 local user_cache_this = {["guid"] = "0"}
 local infoChanged = false
 local infoTicks = 0
@@ -2963,6 +2964,15 @@ function f:INSPECT_READY(event, guid)
         cacheUserTalents(unit)
     end
     cacheUserInventory(unit)
+    -- release the inspect channel now this unit is cached, so it doesn't block the
+    -- player's own inspect of them. But not for an inspect they just opened themselves
+    -- (InspectUnit): its data feeds the Blizzard inspect window, read after this event,
+    -- so clearing here would empty it. Also never clear while that window is open.
+    if (pendingUserInspect) then
+        pendingUserInspect = false
+    elseif (not InspectFrame or not InspectFrame:IsShown()) then
+        ClearInspectPlayer()
+    end
 end
 function f:UNIT_INVENTORY_CHANGED(event, unit)
     if (unit and UnitIsPlayer(unit) and (not UnitIsUnit(unit, "player"))) then
@@ -3187,6 +3197,13 @@ lib.infoTicker = NewTicker(INSPECTOR_INFO_MIN_INTERVAL, infoTick)
 
 Detours:SecureHook(lib, "NotifyInspect", function()
     nextInspectTime = GetTime()+INSPECTOR_INSPECT_DELAY
+end)
+
+-- Only the player's own manual inspects go through InspectUnit (our scans call
+-- NotifyInspect directly). Flag it so the next INSPECT_READY -- which feeds the
+-- Blizzard inspect window -- isn't cleared out from under it below.
+Detours:SecureHook(lib, "InspectUnit", function()
+    pendingUserInspect = true
 end)
 
 -- fix blizzard CanInspect
